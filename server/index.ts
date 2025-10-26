@@ -26,6 +26,9 @@ if (!SQUARE_LOCATION_ID) {
 app.use(cors());
 app.use(express.json());
 
+const distPath = path.resolve(__dirname, '../dist');
+app.use(express.static(distPath));
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
@@ -100,6 +103,14 @@ app.post('/api/square/checkout', async (req, res) => {
     console.error('[square] Error creating payment', error);
     return res.status(500).json({ error: 'Server error while talking to Square' });
   }
+});
+
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 app.listen(PORT, () => {

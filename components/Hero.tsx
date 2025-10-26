@@ -6,7 +6,7 @@ const Hero: React.FC = () => {
     <section 
       id="home"
       className="relative bg-cover bg-center h-screen flex items-center justify-center text-white"
-      style={{ backgroundImage: "url('/steam-power-hero.jpg')" }}
+      style={{ backgroundImage: "url('/steam-power-hero2.jpg')" }}
     >
       <div className="absolute inset-0 bg-brand-dark bg-opacity-60"></div>
       <div className="relative z-10 text-center px-4">

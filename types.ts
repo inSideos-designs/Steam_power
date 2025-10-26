@@ -9,7 +9,7 @@ export interface Service {
   imageUrl: string;
   squareLink?: string;
   squareItemVariationId?: string;
-  category: 'indoor' | 'outdoor' | 'estimate';
+  category: 'indoor' | 'outdoor' | 'estimate' | 'automotive';
 }
 
 export interface Testimonial {

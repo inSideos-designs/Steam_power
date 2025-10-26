@@ -57,7 +57,7 @@ export const SERVICES: Service[] = [
     priceCents: 20000,
     imageUrl: '/services/sedan-detail.jpg',
     squareLink: 'https://square.link/u/PTl9dzNt',
-    category: 'indoor',
+    category: 'automotive',
   },
   {
     id: 'hallway-carpet',

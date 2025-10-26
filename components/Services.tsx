@@ -4,7 +4,7 @@ import type { Service } from '../types';
 import { SERVICES } from '../constants';
 
 interface ServiceGroupConfig {
-  id: 'indoor' | 'outdoor' | 'estimate';
+  id: 'indoor' | 'outdoor' | 'estimate' | 'automotive';
   title: string;
   description: string;
   filter: (service: Service) => boolean;
@@ -24,6 +24,12 @@ const SERVICE_GROUPS: ServiceGroupConfig[] = [
     filter: (service) => service.category === 'outdoor' && !!service.priceCents,
   },
   {
+    id: 'automotive',
+    title: 'Automotive Services',
+    description: 'Interior and exterior detailing packages for vehicles that deserve a showroom-ready finish.',
+    filter: (service) => service.category === 'automotive' && !!service.priceCents,
+  },
+  {
     id: 'estimate',
     title: 'Estimate Services',
     description: 'Projects that require an on-site evaluation before we finalize pricing.',
@@ -33,13 +39,120 @@ const SERVICE_GROUPS: ServiceGroupConfig[] = [
 
 const formatPrice = (service: Service) => (service.priceCents ? service.price : 'Custom Estimate');
 
+const buildServiceList = (ids: readonly string[]) =>
+  ids
+    .map((id) => SERVICES.find((service) => service.id === id))
+    .filter((service): service is Service => Boolean(service));
+
+const CARPET_SERVICE_IDS = ['large-room-carpet', 'medium-room-carpet', 'small-room-carpet'] as const;
+const TILE_SERVICE_IDS = ['large-room-tile', 'medium-room-tile'] as const;
+const CARPET_SERVICES = buildServiceList(CARPET_SERVICE_IDS);
+const TILE_SERVICES = buildServiceList(TILE_SERVICE_IDS);
+const SELECTOR_SERVICE_IDS = new Set<string>([...CARPET_SERVICE_IDS, ...TILE_SERVICE_IDS]);
+
+interface RoomSizeSelectorProps {
+  eyebrow: string;
+  heading: string;
+  body: string;
+  services: Service[];
+  backgroundClass?: string;
+}
+
+const RoomSizeSelector: React.FC<RoomSizeSelectorProps> = ({
+  eyebrow,
+  heading,
+  body,
+  services,
+  backgroundClass = 'bg-gradient-to-br from-white via-brand-light-blue/10 to-white',
+}) => {
+  if (!services.length) {
+    return null;
+  }
+
+  const [selectedId, setSelectedId] = React.useState<string>(services[0].id);
+  const selectedService = services.find((service) => service.id === selectedId) ?? services[0];
+  const bookingHref = selectedService.squareLink ?? '#booking';
+
+  return (
+    <section className={`${backgroundClass} rounded-3xl shadow-xl p-8 md:p-10`} aria-label={heading}>
+      <div className="grid gap-8 md:grid-cols-2 md:items-center">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan mb-3">{eyebrow}</p>
+          <h3 className="text-2xl font-bold text-brand-dark mb-3">{heading}</h3>
+          <p className="text-gray-600 mb-6">{body}</p>
+          <label htmlFor={`${eyebrow.toLowerCase().replace(/\s+/g, '-')}-select`} className="block text-sm font-semibold text-brand-dark mb-2">
+            Room size
+          </label>
+          <select
+            id={`${eyebrow.toLowerCase().replace(/\s+/g, '-')}-select`}
+            value={selectedId}
+            onChange={(event) => setSelectedId(event.target.value)}
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white"
+          >
+            {services.map((service) => (
+              <option key={service.id} value={service.id}>
+                {service.title}
+              </option>
+            ))}
+          </select>
+          <p className="mt-4 text-2xl font-bold text-brand-blue">{selectedService.price}</p>
+        </div>
+        <div className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4">
+          <img src={selectedService.imageUrl} alt={selectedService.title} className="w-full h-48 object-cover rounded-xl" />
+          <div>
+            <p className="text-sm font-semibold text-brand-cyan">{selectedService.title}</p>
+            <p className="text-gray-600 mt-2">{selectedService.description}</p>
+          </div>
+          <a
+            href={bookingHref}
+            target={selectedService.squareLink ? '_blank' : undefined}
+            rel={selectedService.squareLink ? 'noopener noreferrer' : undefined}
+            className="inline-flex items-center justify-center rounded-full bg-brand-cyan text-white font-semibold py-3 px-6 hover:bg-brand-blue transition-colors"
+          >
+            Book {selectedService.title}
+          </a>
+          <p className="text-sm text-gray-500">
+            Prefer to talk it through? <a href="#booking" className="text-brand-cyan font-semibold">Request a custom quote</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const CarpetSizeSelector: React.FC = () => (
+  <RoomSizeSelector
+    eyebrow="Carpet Room Selector"
+    heading="Choose your carpet room size"
+    body="Pick the carpet size that matches your space. Pricing updates automatically and you can jump straight to booking."
+    services={CARPET_SERVICES}
+  />
+);
+
+const TileSizeSelector: React.FC = () => (
+  <RoomSizeSelector
+    eyebrow="Tile Room Selector"
+    heading="Select the tile room that fits"
+    body="Match the tile area that needs cleaning and see the tuned description, price, and checkout link instantly."
+    services={TILE_SERVICES}
+    backgroundClass="bg-gradient-to-br from-white via-brand-cyan/10 to-white"
+  />
+);
+
+const CATEGORY_LABELS: Record<Service['category'], string> = {
+  indoor: 'Indoor',
+  outdoor: 'Outdoor',
+  automotive: 'Automotive',
+  estimate: 'Estimate',
+};
+
 const ServiceCard: React.FC<{ service: Service; allowBooking: boolean; ctaMode: 'book' | 'estimate' }>
   = ({ service, allowBooking, ctaMode }) => {
     return (
       <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col border border-gray-100">
         <img src={service.imageUrl} alt={service.title} className="w-full h-48 object-cover"/>
         <div className="p-6 flex flex-col flex-grow">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan mb-2">{service.category === 'indoor' ? 'Indoor' : service.category === 'outdoor' ? 'Outdoor' : 'Estimate'}</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan mb-2">{CATEGORY_LABELS[service.category]}</p>
           <h3 className="text-xl font-bold text-brand-dark mb-2">{service.title}</h3>
           <p className="text-gray-600 mb-4 flex-grow">{service.description}</p>
           <div className="mt-auto space-y-4">
@@ -75,7 +188,7 @@ const Services: React.FC = () => {
   const grouped = SERVICE_GROUPS
     .map((group) => ({
       ...group,
-      services: SERVICES.filter(group.filter),
+      services: SERVICES.filter((service) => group.filter(service) && !SELECTOR_SERVICE_IDS.has(service.id)),
     }))
     .filter((group) => group.services.length > 0);
 
@@ -88,6 +201,11 @@ const Services: React.FC = () => {
           <p className="mt-4 text-lg text-gray-600">
             Browse indoor favorites, outdoor refreshes, and custom estimate projects. Every service pairs with professional-grade equipment and eco-safe solutions.
           </p>
+          <p className="mt-2 text-base text-brand-dark font-semibold">$100 minimum charge per visit.</p>
+        </div>
+        <div className="space-y-10">
+          <CarpetSizeSelector />
+          <TileSizeSelector />
         </div>
 
         {grouped.map((group) => (

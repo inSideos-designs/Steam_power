@@ -188,7 +188,7 @@ export const SERVICES: Service[] = [
     price: '$35.00',
     priceCents: 3500,
     durationMinutes: 25,
-    imageUrl: '/services/new-pictures/ottoman.jpg',
+    imageUrl: '/services/new-pictures/Ottoman.jpg',
     category: 'indoor',
     serviceType: 'upholstery',
   },

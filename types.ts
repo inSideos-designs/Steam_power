@@ -1,5 +1,17 @@
 import type { ReactElement } from 'react';
 
+export type ServiceCategory = 'indoor' | 'outdoor' | 'automotive' | 'addons';
+
+export type ServiceFocus =
+  | 'carpet'
+  | 'tile'
+  | 'upholstery'
+  | 'windows'
+  | 'area_rug'
+  | 'powerwash'
+  | 'detailing'
+  | 'products';
+
 export interface Service {
   id: string;
   title: string;
@@ -7,9 +19,12 @@ export interface Service {
   price: string;
   priceCents?: number | null;
   imageUrl: string;
+  category: ServiceCategory;
+  serviceType: ServiceFocus;
+  sizeLabel?: string;
+  durationMinutes: number;
   squareLink?: string;
   squareItemVariationId?: string;
-  category: 'indoor' | 'outdoor' | 'estimate' | 'automotive';
 }
 
 export interface Testimonial {

@@ -26,10 +26,11 @@ Copy `.env.example` to `.env` (or inject these variables another way) and provid
 - `VITE_SQUARE_APP_ID`, `VITE_SQUARE_LOCATION_ID`, `SQUARE_ACCESS_TOKEN`, `SQUARE_LOCATION_ID` – existing Square sandbox values if you still need them.
 - `API_PORT` – defaults to `4000`.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` – SMTP credentials for the automated booking email. Omit `SMTP_USER`/`SMTP_PASS` if your relay allows anonymous auth.
+- `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_CALENDAR_ID` – service account credentials with Calendar scope and the target calendar ID for conflict checks + bookings.
 
 > **Tip:** If SMTP variables are not set, bookings still succeed but the API logs a warning and skips the confirmation email.
 
-Google Calendar credentials remain required so that bookings can check for conflicts and create events.
+Google Calendar credentials remain required so that bookings can check for conflicts and create events—without them, the API responds with a 500 when creating bookings.
 
 ## Development Notes
 

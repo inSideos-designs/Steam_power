@@ -177,6 +177,34 @@ const Services: React.FC = () => {
   const [cartItems, setCartItems] = React.useState<CartLineItem[]>([]);
   const [quantities, setQuantities] = React.useState<Record<string, number>>({});
 
+  // Area rug custom dimensions - separate state for on-site and off-site
+  const [rugOnsiteLength, setRugOnsiteLength] = React.useState<number>(8);
+  const [rugOnsiteWidth, setRugOnsiteWidth] = React.useState<number>(10);
+  const [rugOffsiteLength, setRugOffsiteLength] = React.useState<number>(8);
+  const [rugOffsiteWidth, setRugOffsiteWidth] = React.useState<number>(10);
+
+  // Calculate area rug pricing based on service type
+  const calculateRugPrice = React.useCallback((length: number, width: number, isOffsite: boolean) => {
+    const squareFeet = length * width;
+    const pricePerSqFt = isOffsite ? 3.00 : 0.75;
+    const priceCents = Math.round(squareFeet * pricePerSqFt * 100);
+    return { squareFeet, priceCents, priceFormatted: formatCurrency(priceCents), pricePerSqFt };
+  }, []);
+
+  const rugOnsitePricing = React.useMemo(
+    () => calculateRugPrice(rugOnsiteLength, rugOnsiteWidth, false),
+    [rugOnsiteLength, rugOnsiteWidth, calculateRugPrice]
+  );
+
+  const rugOffsitePricing = React.useMemo(
+    () => calculateRugPrice(rugOffsiteLength, rugOffsiteWidth, true),
+    [rugOffsiteLength, rugOffsiteWidth, calculateRugPrice]
+  );
+
+  // Deodorizing powder scent selection
+  const DEODORIZER_SCENTS = ['Black Ice', 'Mahogany Teakwood', 'Blue Lava', 'Seasonal Blend'] as const;
+  const [selectedScent, setSelectedScent] = React.useState<string>(DEODORIZER_SCENTS[0]);
+
   const [customerName, setCustomerName] = React.useState('');
   const [customerEmail, setCustomerEmail] = React.useState('');
   const [customerPhone, setCustomerPhone] = React.useState('');
@@ -266,6 +294,57 @@ const Services: React.FC = () => {
   const handleAddToCart = (service: Service) => {
     const quantity = quantities[service.id] ?? 1;
     updateCartWithQuantity(service, quantity);
+  };
+
+  const handleAddRugToCart = (service: Service, isOffsite: boolean) => {
+    const quantity = quantities[service.id] ?? 1;
+
+    // Use appropriate dimensions and pricing based on service type
+    const length = isOffsite ? rugOffsiteLength : rugOnsiteLength;
+    const width = isOffsite ? rugOffsiteWidth : rugOnsiteWidth;
+    const pricing = isOffsite ? rugOffsitePricing : rugOnsitePricing;
+
+    // Create a unique ID for each rug configuration
+    const uniqueId = `${service.id}-${length}x${width}-${Date.now()}`;
+
+    // Create a custom service object with calculated pricing
+    const customService: Service = {
+      ...service,
+      id: uniqueId,
+      price: pricing.priceFormatted,
+      priceCents: pricing.priceCents,
+      title: `${service.title} (${length}' × ${width}')`,
+      sizeLabel: `${pricing.squareFeet} sq ft @ $${pricing.pricePerSqFt}/sq ft`,
+    };
+
+    // Always add as a new item (don't update existing) to allow multiple rugs
+    setCartItems((prev) => [...prev, { service: customService, quantity }]);
+
+    // Clear the submission states
+    setSubmissionError(null);
+    setConfirmation(null);
+  };
+
+  const handleAddDeodzizerToCart = (service: Service) => {
+    const quantity = quantities[service.id] ?? 1;
+
+    // Create a unique ID for each scent
+    const uniqueId = `${service.id}-${selectedScent.replace(/\s+/g, '-')}-${Date.now()}`;
+
+    // Create a custom service object with selected scent
+    const customService: Service = {
+      ...service,
+      id: uniqueId,
+      title: `${service.title} - ${selectedScent}`,
+      sizeLabel: selectedScent,
+    };
+
+    // Always add as a new item to allow multiple scents
+    setCartItems((prev) => [...prev, { service: customService, quantity }]);
+
+    // Clear the submission states
+    setSubmissionError(null);
+    setConfirmation(null);
   };
 
   const removeFromCart = (serviceId: string) => {
@@ -441,6 +520,16 @@ const Services: React.FC = () => {
                   const quantity = quantities[service.id] ?? 1;
                   const cartLine = cartItems.find((line) => line.service.id === service.id);
                   const subtotalCents = (service.priceCents ?? 0) * (cartLine?.quantity ?? 0);
+                  const isAreaRugOnSite = service.id === 'area-rug-onsite';
+                  const isAreaRugOffSite = service.id === 'area-rug-offsite';
+                  const isAreaRug = isAreaRugOnSite || isAreaRugOffSite;
+                  const isDeodorizer = service.id === 'deodorizer-powder';
+
+                  // Get appropriate dimensions and pricing
+                  const rugLength = isAreaRugOffSite ? rugOffsiteLength : rugOnsiteLength;
+                  const rugWidth = isAreaRugOffSite ? rugOffsiteWidth : rugOnsiteWidth;
+                  const rugPricing = isAreaRugOffSite ? rugOffsitePricing : rugOnsitePricing;
+                  const maxDimension = isAreaRugOffSite ? 12 : 25;
 
                   return (
                     <div
@@ -465,14 +554,104 @@ const Services: React.FC = () => {
                             {SERVICE_TYPE_DETAILS[service.serviceType].label}
                           </p>
                           <h5 className="text-lg font-bold text-brand-dark">{service.title}</h5>
-                          {service.sizeLabel && (
+                          {service.sizeLabel && !isAreaRug && (
                             <p className="text-sm text-brand-blue font-semibold">{service.sizeLabel}</p>
                           )}
                         </div>
                         <p className="text-sm text-gray-600 leading-relaxed flex-grow">{service.description}</p>
+
+                        {/* Custom Area Rug Sizing */}
+                        {isAreaRug && (
+                          <div className="space-y-4 border-t border-gray-100 pt-4">
+                            <div className="space-y-3">
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <label className="text-sm font-medium text-brand-dark">
+                                    Length: {rugLength} ft
+                                  </label>
+                                  <span className="text-xs text-gray-500">Max {maxDimension} ft</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min={1}
+                                  max={maxDimension}
+                                  value={rugLength}
+                                  onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    if (isAreaRugOffSite) {
+                                      setRugOffsiteLength(val);
+                                    } else {
+                                      setRugOnsiteLength(val);
+                                    }
+                                  }}
+                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <label className="text-sm font-medium text-brand-dark">
+                                    Width: {rugWidth} ft
+                                  </label>
+                                  <span className="text-xs text-gray-500">Max {maxDimension} ft</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min={1}
+                                  max={maxDimension}
+                                  value={rugWidth}
+                                  onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    if (isAreaRugOffSite) {
+                                      setRugOffsiteWidth(val);
+                                    } else {
+                                      setRugOnsiteWidth(val);
+                                    }
+                                  }}
+                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
+                                />
+                              </div>
+                            </div>
+                            <div className="bg-brand-cyan/10 rounded-lg p-3 space-y-1">
+                              <p className="text-xs text-gray-600">
+                                Area: <span className="font-semibold text-brand-dark">{rugPricing.squareFeet} sq ft</span>
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                Rate: <span className="font-semibold text-brand-dark">${rugPricing.pricePerSqFt} per sq ft</span>
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Deodorizer Scent Selection */}
+                        {isDeodorizer && (
+                          <div className="space-y-3 border-t border-gray-100 pt-4">
+                            <label className="text-sm font-medium text-brand-dark">
+                              Select Scent
+                            </label>
+                            <select
+                              value={selectedScent}
+                              onChange={(e) => setSelectedScent(e.target.value)}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white"
+                            >
+                              {DEODORIZER_SCENTS.map((scent) => (
+                                <option key={scent} value={scent}>
+                                  {scent}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="bg-brand-cyan/10 rounded-lg p-3">
+                              <p className="text-xs text-gray-600">
+                                Selected: <span className="font-semibold text-brand-dark">{selectedScent}</span>
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-xl font-semibold text-brand-blue">{service.price}</span>
+                            <span className="text-xl font-semibold text-brand-blue">
+                              {isAreaRug ? rugPricing.priceFormatted : service.price}
+                            </span>
                             <span className="text-sm text-gray-500">{formatDuration(service.durationMinutes)}</span>
                           </div>
                           <div className="flex items-center gap-4">
@@ -489,16 +668,24 @@ const Services: React.FC = () => {
                             </label>
                             <button
                               type="button"
-                              onClick={() => handleAddToCart(service)}
+                              onClick={() => {
+                                if (isAreaRug) {
+                                  handleAddRugToCart(service, isAreaRugOffSite);
+                                } else if (isDeodorizer) {
+                                  handleAddDeodzizerToCart(service);
+                                } else {
+                                  handleAddToCart(service);
+                                }
+                              }}
                               className="ml-auto inline-flex items-center justify-center px-4 py-2 rounded-full bg-brand-cyan text-white text-sm font-semibold hover:bg-brand-blue transition-colors"
                             >
-                              {cartLine ? 'Update Cart' : 'Add to Cart'}
+                              Add to Cart
                             </button>
                           </div>
                           {cartLine && (
                             <p className="text-xs text-gray-500">
-                              In cart • {cartLine.quantity} × {service.price} ={' '}
-                              {service.priceCents
+                              In cart • {cartLine.quantity} × {cartLine.service.price} ={' '}
+                              {cartLine.service.priceCents
                                 ? formatCurrency(subtotalCents)
                                 : 'Estimate pending'}
                             </p>

@@ -86,7 +86,7 @@ const formatPlaintextSummary = (payload: BookingEmailPayload) => {
   const lines = [
     `Hi ${payload.customerName},`,
     '',
-    'Thank you for reserving a cleaning with Steam Powered Cleaning! Here are your booking details:',
+    'Thank you for reserving a cleaning with Steam Power Cleaning! Here are your booking details:',
     '',
     `Appointment window: ${formatDateTime(payload.scheduledStartIso, payload.timeZone)} (${payload.timeZone})`,
     `Estimated duration: ${payload.totalDurationMinutes} minutes`,
@@ -113,7 +113,7 @@ const formatPlaintextSummary = (payload: BookingEmailPayload) => {
     '',
     'We appreciate the opportunity to help keep your spaces spotless!',
     '',
-    '— The Steam Powered Cleaning Team',
+    '— The Steam Power Cleaning Team',
   );
 
   return lines.join('\n');
@@ -151,7 +151,7 @@ const formatHtmlSummary = (payload: BookingEmailPayload) => {
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #0f172a;">
       <p style="margin: 0 0 16px;">Hi ${payload.customerName},</p>
       <p style="margin: 0 0 16px; color: #334155;">
-        Thank you for reserving a cleaning with <strong>Steam Powered Cleaning</strong>! Here are your booking details:
+        Thank you for reserving a cleaning with <strong>Steam Power Cleaning</strong>! Here are your booking details:
       </p>
       <p style="margin: 0 0 8px; color: #334155;"><strong>Appointment window:</strong> ${appointment} (${payload.timeZone})</p>
       <p style="margin: 0 0 16px; color: #334155;"><strong>Estimated duration:</strong> ${payload.totalDurationMinutes} minutes</p>
@@ -175,7 +175,7 @@ const formatHtmlSummary = (payload: BookingEmailPayload) => {
         You will only be charged after the service is complete. If anything changes, simply reply to this email and we will adjust your appointment.
       </p>
       <p style="margin: 0 0 8px; color: #334155;">We appreciate the opportunity to help keep your spaces spotless!</p>
-      <p style="margin: 0;">— The Steam Powered Cleaning Team</p>
+      <p style="margin: 0;">— The Steam Power Cleaning Team</p>
     </div>
   `;
 };
@@ -191,7 +191,7 @@ export const sendBookingConfirmation = async (payload: BookingEmailPayload) => {
     const mailOptions = {
       from,
       to: payload.to,
-      subject: 'Steam Powered Cleaning — Booking confirmation',
+      subject: 'Steam Power Cleaning — Booking confirmation',
       text: formatPlaintextSummary(payload),
       html: formatHtmlSummary(payload),
     };

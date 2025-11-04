@@ -136,7 +136,7 @@ app.post('/api/bookings', async (req, res) => {
     ].filter(Boolean) as string[];
 
     const event = await createCalendarBooking({
-      summary: `Steam Powered Cleaning — ${customerName}`,
+      summary: `Steam Power Cleaning — ${customerName}`,
       description: descriptionLines.join('\n'),
       startTime: startDate.toISOString(),
       endTime: endDate.toISOString(),
@@ -205,7 +205,7 @@ app.get('*', (req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Steam Powered API listening on http://localhost:${PORT}`);
+  console.log(`Steam Power API listening on http://localhost:${PORT}`);
 });
 
 function getServiceListForApi() {

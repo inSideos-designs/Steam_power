@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
           <div>
-            <h3 className="text-xl font-bold mb-4">Steam Powered</h3>
+            <h3 className="text-xl font-bold mb-4">Steam Power</h3>
             <p className="text-gray-300">
               A Deeper Clean for a Healthier Home.<br />
               Serving the Middlesex County Area since 2024.
@@ -18,7 +18,9 @@ const Footer: React.FC = () => {
             <ul className="space-y-2 text-gray-300">
               <li><a href="mailto:contact@steampower.com" className="hover:text-brand-cyan">Steam Power LLC</a></li>
               <li><a href="tel:(862)-662-5326" className="hover:text-brand-cyan">(862)-662-5326</a></li>
-              <li>@Steam_Power_LLC</li>
+              <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-cyan">TikTok</a></li>
+              <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-cyan">Instagram</a></li>
+              <li><a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-cyan">Facebook</a></li>
             </ul>
           </div>
           <div>
@@ -30,8 +32,13 @@ const Footer: React.FC = () => {
             </ul>
           </div>
         </div>
-        <div className="mt-12 border-t border-gray-700 pt-8 text-center text-gray-400">
-          <p>&copy; {new Date().getFullYear()} Steam Power LLC. All Rights Reserved.</p>
+        <div className="mt-12 border-t border-gray-700 pt-8">
+          <div className="text-center text-gray-400 mb-4">
+            <p className="text-sm">Please note: We cannot guarantee the removal of every stain or 100% restoration of all surfaces.</p>
+          </div>
+          <div className="text-center text-gray-400">
+            <p>&copy; {new Date().getFullYear()} Steam Power LLC. All Rights Reserved.</p>
+          </div>
         </div>
       </div>
     </footer>

@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
-const PORT = Number(process.env.API_PORT || 4000);
+const PORT = Number(process.env.PORT || process.env.API_PORT || 4000);
 
 if (!hasGoogleCalendarConfig()) {
   console.warn(
@@ -204,8 +204,8 @@ app.get('*', (req, res, next) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Steam Power API listening on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Steam Power API listening on port ${PORT}`);
 });
 
 function getServiceListForApi() {

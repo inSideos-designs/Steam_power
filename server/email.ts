@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 export interface BookingEmailLineItem {
   title: string;
@@ -19,46 +19,23 @@ export interface BookingEmailPayload {
   phone?: string;
 }
 
-let transporter: nodemailer.Transporter | null = null;
-
 const getEmailConfig = () => ({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  user: process.env.SMTP_USER,
-  pass: process.env.SMTP_PASS,
+  apiKey: process.env.SENDGRID_API_KEY,
   from: process.env.EMAIL_FROM,
 });
 
 export const hasEmailConfig = () => {
-  const { host, port, from } = getEmailConfig();
-  return Boolean(host && port && from);
+  const { apiKey, from } = getEmailConfig();
+  return Boolean(apiKey && from);
 };
 
-const getTransporter = () => {
+const initializeSendGrid = () => {
   if (!hasEmailConfig()) {
-    throw new Error('Email configuration is incomplete.');
+    throw new Error('SendGrid configuration is incomplete.');
   }
 
-  if (transporter) {
-    return transporter;
-  }
-
-  const { host, port, user, pass } = getEmailConfig();
-
-  transporter = nodemailer.createTransport({
-    host,
-    port: Number(port),
-    secure: Number(port) === 465,
-    auth:
-      user && pass
-        ? {
-            user,
-            pass,
-          }
-        : undefined,
-  });
-
-  return transporter;
+  const { apiKey } = getEmailConfig();
+  sgMail.setApiKey(apiKey);
 };
 
 export const formatCurrency = (cents: number) =>
@@ -186,17 +163,18 @@ export const sendBookingConfirmation = async (payload: BookingEmailPayload) => {
   }
 
   try {
-    const transport = getTransporter();
+    initializeSendGrid();
     const { from } = getEmailConfig();
-    const mailOptions = {
-      from,
+    const msg = {
       to: payload.to,
+      from: from || 'noreply@example.com',
       subject: 'Steam Power Cleaning — Booking confirmation',
       text: formatPlaintextSummary(payload),
       html: formatHtmlSummary(payload),
     };
 
-    await transport.sendMail(mailOptions);
+    await sgMail.send(msg);
+    console.log('[email] Booking confirmation sent successfully');
     return true;
   } catch (error) {
     console.error('[email] Unable to send booking confirmation', error);

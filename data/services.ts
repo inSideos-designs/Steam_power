@@ -388,6 +388,41 @@ export const SERVICES: Service[] = [
     serviceType: 'powerwash',
   },
 
+  // Outdoor – Roofing & Gutters
+  {
+    id: 'roof-cleaning',
+    title: 'Roof Cleaning',
+    description: 'Removes moss, algae, debris, and weathering stains to extend roof life and restore appearance. Soft-wash methods protect shingles.',
+    price: 'Estimate Required',
+    priceCents: null,
+    durationMinutes: 180,
+    imageUrl: '/services/new-pictures/roof-cleaning.jpg',
+    category: 'outdoor',
+    serviceType: 'roofing',
+  },
+  {
+    id: 'gutter-cleaning',
+    title: 'Gutter & Downspout Cleaning',
+    description: 'Removes leaves, debris, and buildup to ensure proper water drainage and prevent damage to foundation and siding.',
+    price: 'Estimate Required',
+    priceCents: null,
+    durationMinutes: 120,
+    imageUrl: '/services/new-pictures/gutter-cleaning.jpg',
+    category: 'outdoor',
+    serviceType: 'roofing',
+  },
+  {
+    id: 'gutter-guard',
+    title: 'Gutter Guard Installation',
+    description: 'Prevents debris buildup with protective mesh or screen covers. Keeps gutters flowing freely year-round.',
+    price: 'Estimate Required',
+    priceCents: null,
+    durationMinutes: 240,
+    imageUrl: '/services/new-pictures/gutter-guard-install.jpg',
+    category: 'outdoor',
+    serviceType: 'roofing',
+  },
+
   // Automotive, Boat & RV Detailing
   {
     id: 'car-interior',

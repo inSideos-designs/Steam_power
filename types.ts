@@ -9,6 +9,7 @@ export type ServiceFocus =
   | 'windows'
   | 'area_rug'
   | 'powerwash'
+  | 'roofing'
   | 'detailing'
   | 'products';
 

@@ -67,6 +67,7 @@ const SERVICE_TYPE_ORDER: ServiceFocus[] = [
   'upholstery',
   'windows',
   'powerwash',
+  'roofing',
   'detailing',
   'products',
 ];
@@ -119,6 +120,10 @@ const SERVICE_TYPE_DETAILS: Record<ServiceFocus, { label: string; description: s
     label: 'Power Washing',
     description: 'Exterior rinses, degreasing, and soft-washing tailored to the surface and soil level.',
   },
+  roofing: {
+    label: 'Roofing & Gutters',
+    description: 'Roof cleaning, gutter maintenance, and protective installations to safeguard your home.',
+  },
   detailing: {
     label: 'Detailing',
     description: 'Interior, exterior, and full detailing packages for vehicles, boats, and RVs.',
@@ -148,7 +153,6 @@ const DEFAULT_TIME_ZONE = (() => {
 })();
 
 const clampQuantity = (next: number) => Math.min(10, Math.max(0, Number.isFinite(next) ? next : 0));
-
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',

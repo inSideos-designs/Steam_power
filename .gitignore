@@ -13,6 +13,10 @@ dist-ssr
 /.env
 *.local
 
+# Google Calendar OAuth
+token.json
+credentials.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

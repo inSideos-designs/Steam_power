@@ -11,6 +11,11 @@ import {
   createCalendarBooking,
 } from './googleCalendar';
 import { hasEmailConfig, sendBookingConfirmation } from './email';
+import {
+  listUpcomingEvents,
+  getAvailableSlots,
+  isTimeSlotAvailable,
+} from './googleCalendarOAuth';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +47,60 @@ app.get('/api/health', (_req, res) => {
 
 app.get('/api/services', (_req, res) => {
   res.json({ services: getServiceListForApi() });
+});
+
+// OAuth Calendar endpoints
+app.get('/api/calendar/events', async (_req, res) => {
+  try {
+    const events = await listUpcomingEvents(10);
+    res.json(events);
+  } catch (error) {
+    console.error('[calendar] Error listing events', error);
+    res.status(500).json({
+      error: 'Unable to fetch calendar events. Make sure you have authenticated with Google Calendar.',
+    });
+  }
+});
+
+app.get('/api/calendar/available-slots', async (req, res) => {
+  try {
+    const date = req.query.date as string;
+    if (!date) {
+      return res.status(400).json({ error: 'date query parameter is required (ISO 8601 format)' });
+    }
+
+    const businessHoursStart = req.query.businessHoursStart
+      ? Number(req.query.businessHoursStart)
+      : 9;
+    const businessHoursEnd = req.query.businessHoursEnd ? Number(req.query.businessHoursEnd) : 17;
+    const slotDuration = req.query.slotDuration ? Number(req.query.slotDuration) : 60;
+
+    const slots = await getAvailableSlots(date, businessHoursStart, businessHoursEnd, slotDuration);
+    res.json(slots);
+  } catch (error) {
+    console.error('[calendar] Error getting available slots', error);
+    res.status(500).json({
+      error: 'Unable to fetch available slots. Make sure you have authenticated with Google Calendar.',
+    });
+  }
+});
+
+app.post('/api/calendar/check-availability', async (req, res) => {
+  try {
+    const { startTime, endTime } = req.body;
+
+    if (!startTime || !endTime) {
+      return res.status(400).json({ error: 'startTime and endTime are required' });
+    }
+
+    const available = await isTimeSlotAvailable(startTime, endTime);
+    res.json({ available, startTime, endTime });
+  } catch (error) {
+    console.error('[calendar] Error checking availability', error);
+    res.status(500).json({
+      error: 'Unable to check availability. Make sure you have authenticated with Google Calendar.',
+    });
+  }
 });
 
 app.post('/api/bookings', async (req, res) => {

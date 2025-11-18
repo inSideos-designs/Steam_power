@@ -5,16 +5,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { SERVICES } from '../data/services';
 import { calculateCartTotals, resolveCartItems } from './services';
-import {
-  hasGoogleCalendarConfig,
-  checkCalendarConflicts,
-  createCalendarBooking,
-} from './googleCalendar';
+// Note: googleCalendar.ts (JWT service account) is no longer used for bookings
+// All booking operations now use OAuth calendar (googleCalendarOAuth.ts)
 import { hasEmailConfig, sendBookingConfirmation } from './email';
 import {
   listUpcomingEvents,
   getAvailableSlots,
   isTimeSlotAvailable,
+  createEvent,
 } from './googleCalendarOAuth';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,12 +22,6 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = Number(process.env.PORT || process.env.API_PORT || 4000);
-
-if (!hasGoogleCalendarConfig()) {
-  console.warn(
-    '[calendar] Google Calendar is not fully configured — POST /api/bookings will fail until credentials are provided.',
-  );
-}
 
 if (!hasEmailConfig()) {
   console.warn('[email] SMTP configuration is missing — booking confirmations will not be sent.');
@@ -104,9 +96,6 @@ app.post('/api/calendar/check-availability', async (req, res) => {
 });
 
 app.post('/api/bookings', async (req, res) => {
-  if (!hasGoogleCalendarConfig()) {
-    return res.status(500).json({ error: 'Google Calendar credentials are missing on the server.' });
-  }
 
   const body = req.body ?? {};
 
@@ -173,8 +162,9 @@ app.post('/api/bookings', async (req, res) => {
   const timeZone = typeof body.timeZone === 'string' && body.timeZone ? body.timeZone : 'UTC';
 
   try {
-    const hasConflict = await checkCalendarConflicts(startDate.toISOString(), endDate.toISOString());
-    if (hasConflict) {
+    // Check availability using OAuth calendar
+    const isAvailable = await isTimeSlotAvailable(startDate.toISOString(), endDate.toISOString());
+    if (!isAvailable) {
       return res.status(409).json({ error: 'That time is no longer available. Please pick a different slot.' });
     }
 
@@ -194,20 +184,18 @@ app.post('/api/bookings', async (req, res) => {
       notes ? `Notes: ${notes}` : null,
     ].filter(Boolean) as string[];
 
-    const event = await createCalendarBooking({
+    // Create event using OAuth calendar
+    const event = await createEvent({
       summary: `Steam Power Cleaning — ${customerName}`,
       description: descriptionLines.join('\n'),
       startTime: startDate.toISOString(),
       endTime: endDate.toISOString(),
-      timeZone,
-      attendeeEmail: customerEmail,
-      attendeeName: customerName,
-      extendedProperties: {
-        cart: cartItems.map((item) => `${item.service.id}:${item.quantity}`).join(','),
-        phone: customerPhone,
-        notes,
-        totalPriceCents,
-      },
+      attendees: [
+        {
+          email: customerEmail,
+          displayName: customerName,
+        },
+      ],
     });
 
     let emailSent = false;

@@ -38,14 +38,20 @@ async function loadSavedCredentials() {
  */
 async function saveCredentials(auth: any) {
   const fs = await import('fs/promises');
-  const key = auth.key || (await auth.getCredentials());
   const content = await fs.readFile(CREDENTIALS_PATH, 'utf8');
   const keys = JSON.parse(content);
+
+  const refreshToken = auth.credentials?.refresh_token;
+  if (!refreshToken) {
+    console.error('[calendar] No refresh token available to save');
+    return;
+  }
+
   const payload = JSON.stringify({
     type: 'authorized_user',
     client_id: keys.installed.client_id,
     client_secret: keys.installed.client_secret,
-    refresh_token: auth.credentials.refresh_token,
+    refresh_token: refreshToken,
   });
   await fs.writeFile(TOKEN_PATH, payload);
 }
@@ -61,16 +67,19 @@ async function authorize() {
 
   let auth = await loadSavedCredentials();
   if (auth) {
+    console.log('[calendar] Using cached OAuth token');
     cachedAuth = auth;
     return auth;
   }
 
+  console.log('[calendar] Initiating new OAuth authentication...');
   auth = await authenticate({
     scopes: SCOPES,
     keyfilePath: CREDENTIALS_PATH,
   });
 
   if (auth.credentials) {
+    console.log('[calendar] Saving OAuth credentials to token.json');
     await saveCredentials(auth);
   }
 
@@ -165,7 +174,7 @@ export async function getAvailableSlots(
     const isBooked = events.some((event) => {
       const eventStart = new Date(event.start?.dateTime || event.start?.date || 0);
       const eventEnd = new Date(event.end?.dateTime || event.end?.date || 0);
-      return slotStart < eventEnd && slotEnd > eventStart;
+      return slotStartTime < eventEnd && slotEnd > eventStart;
     });
 
     slots.push({
@@ -190,27 +199,36 @@ export async function createEvent(eventDetails: {
   endTime: string;
   attendees?: Array<{ email: string; displayName?: string }>;
 }) {
-  const calendar = await getCalendarClient();
+  try {
+    const calendar = await getCalendarClient();
 
-  const event: calendar_v3.Schema$Event = {
-    summary: eventDetails.summary,
-    description: eventDetails.description,
-    start: {
-      dateTime: eventDetails.startTime,
-    },
-    end: {
-      dateTime: eventDetails.endTime,
-    },
-    attendees: eventDetails.attendees,
-  };
+    const event: calendar_v3.Schema$Event = {
+      summary: eventDetails.summary,
+      description: eventDetails.description,
+      start: {
+        dateTime: eventDetails.startTime,
+      },
+      end: {
+        dateTime: eventDetails.endTime,
+      },
+      attendees: eventDetails.attendees,
+    };
 
-  const result = await calendar.events.insert({
-    calendarId: 'primary',
-    requestBody: event,
-    sendUpdates: 'all',
-  });
+    const result = await calendar.events.insert({
+      calendarId: 'primary',
+      requestBody: event,
+      sendUpdates: 'all',
+    });
 
-  return result.data;
+    if (!result.data) {
+      throw new Error('No data returned from calendar API');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('[calendar] Error creating event:', error instanceof Error ? error.message : error);
+    throw error;
+  }
 }
 
 /**

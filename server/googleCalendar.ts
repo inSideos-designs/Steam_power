@@ -1,6 +1,7 @@
 import { google, calendar_v3 } from 'googleapis';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 export interface CalendarBookingPayload {
   summary: string;
@@ -14,6 +15,10 @@ export interface CalendarBookingPayload {
 }
 
 const CALENDAR_SCOPES = 'https://www.googleapis.com/auth/calendar';
+
+// Define __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let calendarClient: calendar_v3.Calendar | null = null;
 let authClient: any = null;

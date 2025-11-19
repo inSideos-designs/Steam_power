@@ -1,7 +1,5 @@
 import { google, calendar_v3 } from 'googleapis';
-import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 
 export interface CalendarBookingPayload {
   summary: string;
@@ -16,22 +14,20 @@ export interface CalendarBookingPayload {
 
 const CALENDAR_SCOPES = 'https://www.googleapis.com/auth/calendar';
 
-// Define __dirname for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 let calendarClient: calendar_v3.Calendar | null = null;
 let authClient: any = null;
 
 // Get the service account key file path
 const getKeyFilePath = (): string | null => {
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH) {
-    return process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
+  const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
+
+  if (keyPath && fs.existsSync(keyPath)) {
+    console.log('[calendar] Found key file at:', keyPath);
+    return keyPath;
   }
 
-  const localPath = path.join(__dirname, '../google-service-account.json');
-  if (fs.existsSync(localPath)) {
-    return localPath;
+  if (keyPath) {
+    console.warn('[calendar] GOOGLE_SERVICE_ACCOUNT_KEY_PATH set but file not found:', keyPath);
   }
 
   return null;

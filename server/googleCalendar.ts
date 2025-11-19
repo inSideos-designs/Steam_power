@@ -83,9 +83,12 @@ const getAuthClient = async () => {
     // Replace escaped newlines with actual newlines
     privateKey = privateKey.replace(/\\n/g, '\n');
 
-    // If the key doesn't have the markers, wrap it
+    // If the key doesn't have the markers, wrap it with proper formatting
     if (!privateKey.includes('BEGIN PRIVATE KEY')) {
-      privateKey = '-----BEGIN PRIVATE KEY-----\n' + privateKey + '\n-----END PRIVATE KEY-----';
+      // The key is Base64 content without markers
+      // Need to format it with proper line breaks (64 chars per line for PEM)
+      let formattedKey = privateKey.replace(/(.{64})/g, '$1\n');
+      privateKey = '-----BEGIN PRIVATE KEY-----\n' + formattedKey + '\n-----END PRIVATE KEY-----';
     }
 
     console.log('[calendar] Using private key with markers:', privateKey.substring(0, 50) + '...');

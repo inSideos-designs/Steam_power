@@ -55,52 +55,21 @@ const getAuthClient = async () => {
 
   const keyPath = getKeyFilePath();
 
-  if (keyPath && fs.existsSync(keyPath)) {
-    // Use GoogleAuth with keyFile (most reliable method)
-    console.log('[calendar] Using GoogleAuth with keyFile:', keyPath);
-    authClient = new google.auth.GoogleAuth({
-      keyFile: keyPath,
-      scopes: CALENDAR_SCOPES,
-    });
-  } else {
-    // Fallback to credentials from environment variables
-    console.log('[calendar] Using GoogleAuth from environment variables');
-    let clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    let privateKey = process.env.GOOGLE_PRIVATE_KEY;
-
-    if (!clientEmail || !privateKey) {
-      throw new Error('Google Calendar credentials are not configured.');
-    }
-
-    // Fix the private key format if needed
-    // Remove surrounding quotes if present
-    privateKey = privateKey.trim();
-    if ((privateKey.startsWith('"') && privateKey.endsWith('"')) ||
-        (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
-      privateKey = privateKey.slice(1, -1);
-    }
-
-    // Replace escaped newlines with actual newlines
-    privateKey = privateKey.replace(/\\n/g, '\n');
-
-    // If the key doesn't have the markers, wrap it with proper formatting
-    if (!privateKey.includes('BEGIN PRIVATE KEY')) {
-      // The key is Base64 content without markers
-      // Need to format it with proper line breaks (64 chars per line for PEM)
-      let formattedKey = privateKey.replace(/(.{64})/g, '$1\n');
-      privateKey = '-----BEGIN PRIVATE KEY-----\n' + formattedKey + '\n-----END PRIVATE KEY-----';
-    }
-
-    console.log('[calendar] Using private key with markers:', privateKey.substring(0, 50) + '...');
-
-    authClient = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: clientEmail,
-        private_key: privateKey,
-      },
-      scopes: CALENDAR_SCOPES,
-    });
+  if (!keyPath || !fs.existsSync(keyPath)) {
+    console.error('[calendar] ERROR: Secret file not found at:', process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH);
+    console.error('[calendar] GOOGLE_SERVICE_ACCOUNT_KEY_PATH env var:', process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH);
+    throw new Error(
+      'Google Calendar secret file not found. ' +
+      'Set GOOGLE_SERVICE_ACCOUNT_KEY_PATH to the path of your service account JSON file on Render.'
+    );
   }
+
+  // Use GoogleAuth with keyFile (the only supported method)
+  console.log('[calendar] Using GoogleAuth with keyFile:', keyPath);
+  authClient = new google.auth.GoogleAuth({
+    keyFile: keyPath,
+    scopes: CALENDAR_SCOPES,
+  });
 
   return authClient;
 };

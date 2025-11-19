@@ -36,28 +36,36 @@ export const hasGoogleCalendarConfig = () => {
 const sanitisePrivateKey = (key?: string) => {
   if (!key) return undefined;
 
-  // Remove surrounding quotes if present
-  let cleanKey = key;
+  let cleanKey = key.trim();
+
+  // Remove surrounding quotes if present (both single and double)
   if ((cleanKey.startsWith('"') && cleanKey.endsWith('"')) ||
       (cleanKey.startsWith("'") && cleanKey.endsWith("'"))) {
     cleanKey = cleanKey.slice(1, -1);
   }
 
-  // Check if it's Base64 encoded (starts with LS0t which is "---" in base64)
-  if (cleanKey.startsWith('LS0t')) {
-    try {
-      const decoded = Buffer.from(cleanKey, 'base64').toString('utf-8');
-      // Verify it looks like a valid key
-      if (decoded.includes('BEGIN PRIVATE KEY') && decoded.includes('END PRIVATE KEY')) {
-        return decoded;
+  // Try to handle as JSON string (with escaped newlines)
+  try {
+    // If it looks like it's escaped (contains \\n), parse it as JSON
+    if (cleanKey.includes('\\n')) {
+      const parsed = JSON.parse(`"${cleanKey}"`);
+      if (parsed.includes('BEGIN PRIVATE KEY') && parsed.includes('END PRIVATE KEY')) {
+        return parsed;
       }
-    } catch (err) {
-      console.warn('[calendar] Failed to decode Base64 key, trying literal interpretation');
     }
+  } catch (err) {
+    // Not a JSON string, continue
   }
 
-  // Replace escaped newlines with actual newlines
-  return cleanKey.replace(/\\n/g, '\n');
+  // Replace escaped newlines with actual newlines (literal backslash-n)
+  const result = cleanKey.replace(/\\n/g, '\n');
+
+  // Verify it's a valid key
+  if (!result.includes('BEGIN PRIVATE KEY') || !result.includes('END PRIVATE KEY')) {
+    console.warn('[calendar] Key does not contain BEGIN/END PRIVATE KEY markers');
+  }
+
+  return result;
 };
 
 const getAuthClient = () => {

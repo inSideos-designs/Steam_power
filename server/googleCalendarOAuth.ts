@@ -16,7 +16,7 @@ const CREDENTIALS_PATH = path.join(__dirname, '../credentials.json');
 // The path to the token file (cached authorization).
 const TOKEN_PATH = path.join(__dirname, '../token.json');
 
-let cachedAuth: any = null;
+let cachedAuth: ReturnType<typeof google.auth.fromJSON> | null = null;
 let cachedCalendar: calendar_v3.Calendar | null = null;
 
 /**
@@ -36,7 +36,7 @@ async function loadSavedCredentials() {
 /**
  * Serializes credentials to a file compatible with GoogleAuth.fromJSON.
  */
-async function saveCredentials(auth: any) {
+async function saveCredentials(auth: ReturnType<typeof google.auth.fromJSON>) {
   const fs = await import('fs/promises');
   const content = await fs.readFile(CREDENTIALS_PATH, 'utf8');
   const keys = JSON.parse(content);

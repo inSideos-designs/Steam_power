@@ -10,6 +10,7 @@ import {
   checkCalendarConflicts,
   createCalendarBooking,
 } from './googleCalendar';
+import { listUpcomingEvents, getAvailableSlots, isTimeSlotAvailable } from './googleCalendarOAuth';
 import { hasEmailConfig, sendBookingConfirmation } from './email';
 
 const __filename = fileURLToPath(import.meta.url);

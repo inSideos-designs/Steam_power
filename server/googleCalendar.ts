@@ -22,11 +22,36 @@ const CALENDAR_SCOPES = ['https://www.googleapis.com/auth/calendar'];
 let calendarClient: calendar_v3.Calendar | null = null;
 let authClient: InstanceType<typeof google.auth.JWT> | null = null;
 
-const getCalendarConfig = (): CalendarConfig => ({
-  clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
-  privateKey: process.env.GOOGLE_PRIVATE_KEY,
-  calendarId: process.env.GOOGLE_CALENDAR_ID,
-});
+const getCalendarConfig = (): CalendarConfig => {
+  // Try to load from JSON file first (for local development)
+  let clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+  let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  let calendarId = process.env.GOOGLE_CALENDAR_ID;
+
+  // If we have all env vars, use them
+  if (clientEmail && privateKey && calendarId) {
+    return { clientEmail, privateKey, calendarId };
+  }
+
+  // Otherwise try to load from service account JSON file
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH ||
+                    path.join(__dirname, '../google-service-account.json');
+
+    if (fs.existsSync(keyPath)) {
+      const keyFile = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+      clientEmail = clientEmail || keyFile.client_email;
+      privateKey = privateKey || keyFile.private_key;
+      calendarId = calendarId || process.env.GOOGLE_CALENDAR_ID;
+    }
+  } catch (err) {
+    // Silently fail - env vars should be set
+  }
+
+  return { clientEmail, privateKey, calendarId };
+};
 
 export const hasGoogleCalendarConfig = () => {
   const { clientEmail, privateKey, calendarId } = getCalendarConfig();
@@ -44,25 +69,36 @@ const sanitisePrivateKey = (key?: string) => {
     cleanKey = cleanKey.slice(1, -1);
   }
 
-  // Try to handle as JSON string (with escaped newlines)
-  try {
-    // If it looks like it's escaped (contains \\n), parse it as JSON
-    if (cleanKey.includes('\\n')) {
-      const parsed = JSON.parse(`"${cleanKey}"`);
-      if (parsed.includes('BEGIN PRIVATE KEY') && parsed.includes('END PRIVATE KEY')) {
+  // Handle both escaped newlines (\\n as two chars) and literal newlines
+  // First try JSON parsing for properly escaped strings
+  if (cleanKey.includes('\\n')) {
+    try {
+      // Use JSON.parse to handle the escaping properly
+      const json = `"${cleanKey.replace(/"/g, '\\"')}"`;
+      const parsed = JSON.parse(json);
+      if (parsed && parsed.includes('BEGIN PRIVATE KEY') && parsed.includes('END PRIVATE KEY')) {
+        console.log('[calendar] Successfully parsed key as escaped JSON string');
         return parsed;
       }
+    } catch (err) {
+      console.warn('[calendar] Failed to parse as JSON string:', err instanceof Error ? err.message : err);
     }
-  } catch (err) {
-    // Not a JSON string, continue
   }
 
-  // Replace escaped newlines with actual newlines (literal backslash-n)
-  const result = cleanKey.replace(/\\n/g, '\n');
+  // Try replacing literal \\n sequences with newlines
+  let result = cleanKey.replace(/\\n/g, '\n');
+
+  // If still no newlines but we have the markers, it might already have real newlines
+  if (!result.includes('\n') && result.includes('BEGIN PRIVATE KEY')) {
+    result = cleanKey;
+  }
 
   // Verify it's a valid key
   if (!result.includes('BEGIN PRIVATE KEY') || !result.includes('END PRIVATE KEY')) {
-    console.warn('[calendar] Key does not contain BEGIN/END PRIVATE KEY markers');
+    console.error('[calendar] Key does not contain BEGIN/END PRIVATE KEY markers');
+    console.error('[calendar] Key starts with:', result.substring(0, 100));
+  } else {
+    console.log('[calendar] Private key successfully sanitized');
   }
 
   return result;

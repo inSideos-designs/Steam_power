@@ -17,7 +17,7 @@ export interface CalendarBookingPayload {
   extendedProperties?: Record<string, string | number | null | undefined>;
 }
 
-const CALENDAR_SCOPES = ['https://www.googleapis.com/auth/calendar'];
+const CALENDAR_SCOPES = 'https://www.googleapis.com/auth/calendar';
 
 let calendarClient: calendar_v3.Calendar | null = null;
 let authClient: InstanceType<typeof google.auth.JWT> | null = null;
@@ -121,11 +121,13 @@ const getAuthClient = () => {
   }
 
   try {
-    authClient = new google.auth.JWT({
-      email: clientEmail,
-      key: sanitizedKey,
-      scopes: CALENDAR_SCOPES,
-    });
+    // Use the positional parameter format which is more reliable
+    authClient = new google.auth.JWT(
+      clientEmail,
+      null,
+      sanitizedKey,
+      CALENDAR_SCOPES
+    );
     console.log('[calendar] JWT auth client created successfully');
   } catch (error) {
     console.error('[calendar] Failed to create JWT auth client:', error instanceof Error ? error.message : error);

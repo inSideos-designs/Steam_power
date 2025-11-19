@@ -36,17 +36,28 @@ export const hasGoogleCalendarConfig = () => {
 const sanitisePrivateKey = (key?: string) => {
   if (!key) return undefined;
 
-  // If the key is Base64 encoded, decode it
-  if (key.startsWith('LS0tQkVHSU4')) {
+  // Remove surrounding quotes if present
+  let cleanKey = key;
+  if ((cleanKey.startsWith('"') && cleanKey.endsWith('"')) ||
+      (cleanKey.startsWith("'") && cleanKey.endsWith("'"))) {
+    cleanKey = cleanKey.slice(1, -1);
+  }
+
+  // Check if it's Base64 encoded (starts with LS0t which is "---" in base64)
+  if (cleanKey.startsWith('LS0t')) {
     try {
-      return Buffer.from(key, 'base64').toString('utf-8');
-    } catch {
-      // Not base64, continue with other methods
+      const decoded = Buffer.from(cleanKey, 'base64').toString('utf-8');
+      // Verify it looks like a valid key
+      if (decoded.includes('BEGIN PRIVATE KEY') && decoded.includes('END PRIVATE KEY')) {
+        return decoded;
+      }
+    } catch (err) {
+      console.warn('[calendar] Failed to decode Base64 key, trying literal interpretation');
     }
   }
 
   // Replace escaped newlines with actual newlines
-  return key.replace(/\\n/g, '\n');
+  return cleanKey.replace(/\\n/g, '\n');
 };
 
 const getAuthClient = () => {
@@ -59,12 +70,23 @@ const getAuthClient = () => {
   }
 
   const { clientEmail, privateKey } = getCalendarConfig();
+  const sanitizedKey = sanitisePrivateKey(privateKey);
 
-  authClient = new google.auth.JWT({
-    email: clientEmail,
-    key: sanitisePrivateKey(privateKey),
-    scopes: CALENDAR_SCOPES,
-  });
+  if (!sanitizedKey) {
+    throw new Error('Failed to parse private key - key is empty after sanitization');
+  }
+
+  try {
+    authClient = new google.auth.JWT({
+      email: clientEmail,
+      key: sanitizedKey,
+      scopes: CALENDAR_SCOPES,
+    });
+    console.log('[calendar] JWT auth client created successfully');
+  } catch (error) {
+    console.error('[calendar] Failed to create JWT auth client:', error instanceof Error ? error.message : error);
+    throw error;
+  }
 
   return authClient;
 };

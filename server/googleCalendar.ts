@@ -17,6 +17,35 @@ const CALENDAR_SCOPES = 'https://www.googleapis.com/auth/calendar';
 let calendarClient: calendar_v3.Calendar | null = null;
 let authClient: any = null;
 
+const normalisePrivateKey = (key: string) => {
+  let normalised = key;
+
+  if (normalised.includes('\\n')) {
+    normalised = normalised.replace(/\\n/g, '\n');
+  }
+
+  // Ensure Windows-style newlines or stray carriage returns don't break OpenSSL parsing
+  normalised = normalised.replace(/\r\n?/g, '\n');
+
+  return normalised.trim();
+};
+
+const getEnvCredentials = () => {
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const projectId = process.env.GOOGLE_PROJECT_ID || process.env.GOOGLE_PROJECT_NUMBER;
+
+  if (!clientEmail || !privateKey) {
+    return null;
+  }
+
+  return {
+    clientEmail,
+    privateKey: normalisePrivateKey(privateKey),
+    projectId,
+  };
+};
+
 // Get the service account key file path
 const getKeyFilePath = (): string | null => {
   const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
@@ -34,18 +63,19 @@ const getKeyFilePath = (): string | null => {
 };
 
 export const hasGoogleCalendarConfig = () => {
-  const keyPath = getKeyFilePath();
   const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
-  if (keyPath && fs.existsSync(keyPath) && calendarId) {
+  if (!calendarId) {
+    return false;
+  }
+
+  const keyPath = getKeyFilePath();
+
+  if (keyPath && fs.existsSync(keyPath)) {
     return true;
   }
 
-  // Fallback to env vars
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-
-  return Boolean(clientEmail && privateKey && calendarId);
+  return Boolean(getEnvCredentials());
 };
 
 const getAuthClient = async () => {
@@ -55,23 +85,38 @@ const getAuthClient = async () => {
 
   const keyPath = getKeyFilePath();
 
-  if (!keyPath || !fs.existsSync(keyPath)) {
-    console.error('[calendar] ERROR: Secret file not found at:', process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH);
-    console.error('[calendar] GOOGLE_SERVICE_ACCOUNT_KEY_PATH env var:', process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH);
-    throw new Error(
-      'Google Calendar secret file not found. ' +
-      'Set GOOGLE_SERVICE_ACCOUNT_KEY_PATH to the path of your service account JSON file on Render.'
-    );
+  if (keyPath && fs.existsSync(keyPath)) {
+    console.log('[calendar] Using GoogleAuth with keyFile:', keyPath);
+    authClient = new google.auth.GoogleAuth({
+      keyFile: keyPath,
+      scopes: CALENDAR_SCOPES,
+    });
+
+    return authClient;
   }
 
-  // Use GoogleAuth with keyFile (the only supported method)
-  console.log('[calendar] Using GoogleAuth with keyFile:', keyPath);
-  authClient = new google.auth.GoogleAuth({
-    keyFile: keyPath,
-    scopes: CALENDAR_SCOPES,
-  });
+  const envCredentials = getEnvCredentials();
 
-  return authClient;
+  if (envCredentials) {
+    console.log('[calendar] Using GoogleAuth from environment variables');
+    authClient = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: envCredentials.clientEmail,
+        private_key: envCredentials.privateKey,
+        project_id: envCredentials.projectId,
+      },
+      scopes: CALENDAR_SCOPES,
+    });
+
+    return authClient;
+  }
+
+  console.error('[calendar] ERROR: No Google service account credentials found.');
+  console.error('[calendar] GOOGLE_SERVICE_ACCOUNT_KEY_PATH env var:', process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH);
+  throw new Error(
+    'Google Calendar credentials not found. ' +
+    'Set GOOGLE_SERVICE_ACCOUNT_KEY_PATH to a service account JSON file or configure GOOGLE_CLIENT_EMAIL and GOOGLE_PRIVATE_KEY.'
+  );
 };
 
 const getCalendarClient = async () => {

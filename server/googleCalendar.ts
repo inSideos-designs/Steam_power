@@ -194,21 +194,6 @@ export const createCalendarBooking = async (
         dateTime: payload.endTime,
         timeZone: payload.timeZone,
       },
-      attendees:
-        payload.attendeeEmail && payload.attendeeName
-          ? [
-              {
-                email: payload.attendeeEmail,
-                displayName: payload.attendeeName,
-              },
-            ]
-          : payload.attendeeEmail
-          ? [
-              {
-                email: payload.attendeeEmail,
-              },
-            ]
-          : undefined,
       extendedProperties: normaliseExtendedProperties(
         payload.extendedProperties
       ),
@@ -219,7 +204,7 @@ export const createCalendarBooking = async (
     const response = await calendar.events.insert({
       calendarId,
       requestBody: request,
-      sendUpdates: 'all',
+      sendUpdates: 'none',
     });
 
     if (!response.data) {

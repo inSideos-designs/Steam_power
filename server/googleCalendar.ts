@@ -64,17 +64,35 @@ const getAuthClient = async () => {
   } else {
     // Fallback to credentials from environment variables
     console.log('[calendar] Using GoogleAuth from environment variables');
-    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+    let clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY;
 
     if (!clientEmail || !privateKey) {
       throw new Error('Google Calendar credentials are not configured.');
     }
 
+    // Fix the private key format if needed
+    // Remove surrounding quotes if present
+    privateKey = privateKey.trim();
+    if ((privateKey.startsWith('"') && privateKey.endsWith('"')) ||
+        (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
+      privateKey = privateKey.slice(1, -1);
+    }
+
+    // Replace escaped newlines with actual newlines
+    privateKey = privateKey.replace(/\\n/g, '\n');
+
+    // If the key doesn't have the markers, wrap it
+    if (!privateKey.includes('BEGIN PRIVATE KEY')) {
+      privateKey = '-----BEGIN PRIVATE KEY-----\n' + privateKey + '\n-----END PRIVATE KEY-----';
+    }
+
+    console.log('[calendar] Using private key with markers:', privateKey.substring(0, 50) + '...');
+
     authClient = new google.auth.GoogleAuth({
       credentials: {
         client_email: clientEmail,
-        private_key: privateKey.replace(/\\n/g, '\n'),
+        private_key: privateKey,
       },
       scopes: CALENDAR_SCOPES,
     });

@@ -33,7 +33,21 @@ export const hasGoogleCalendarConfig = () => {
   return Boolean(clientEmail && privateKey && calendarId);
 };
 
-const sanitisePrivateKey = (key?: string) => key?.replace(/\\n/g, '\n');
+const sanitisePrivateKey = (key?: string) => {
+  if (!key) return undefined;
+
+  // If the key is Base64 encoded, decode it
+  if (key.startsWith('LS0tQkVHSU4')) {
+    try {
+      return Buffer.from(key, 'base64').toString('utf-8');
+    } catch {
+      // Not base64, continue with other methods
+    }
+  }
+
+  // Replace escaped newlines with actual newlines
+  return key.replace(/\\n/g, '\n');
+};
 
 const getAuthClient = () => {
   if (!hasGoogleCalendarConfig()) {

@@ -8,6 +8,12 @@ type CartLineItem = {
   quantity: number;
 };
 
+interface SuggestedTime {
+  date: string;
+  dayName: string;
+  timeRange: string;
+}
+
 interface BookingConfirmation {
   eventId?: string;
   calendarUrl?: string;
@@ -24,6 +30,12 @@ interface BookingConfirmation {
     priceCents: number;
     serviceType: ServiceFocus;
   }>;
+}
+
+interface BookingError {
+  error: string;
+  suggestedTimes?: SuggestedTime[];
+  suggestedTimesText?: string;
 }
 
 const toIsoWithTimeZone = (dateString: string, timeString: string, timeZone: string) => {
@@ -218,6 +230,7 @@ const Services: React.FC = () => {
   const [timeZone, setTimeZone] = React.useState<string>(DEFAULT_TIME_ZONE);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submissionError, setSubmissionError] = React.useState<string | null>(null);
+  const [suggestedTimes, setSuggestedTimes] = React.useState<SuggestedTime[]>([]);
   const [confirmation, setConfirmation] = React.useState<BookingConfirmation | null>(null);
 
   const availableServiceTypes = React.useMemo(() => {
@@ -419,10 +432,19 @@ const Services: React.FC = () => {
       });
 
       const json = await response.json().catch(() => null);
-      if (!response.ok || !json) {
-        throw new Error(json?.error ?? 'Unable to complete your reservation right now.');
+      if (!response.ok) {
+        // Handle error response with optional suggested times
+        const errorData = json as BookingError;
+        setSuggestedTimes(errorData.suggestedTimes || []);
+        throw new Error(errorData.error ?? 'Unable to complete your reservation right now.');
       }
 
+      if (!json) {
+        throw new Error('Unable to complete your reservation right now.');
+      }
+
+      // Success - clear suggested times
+      setSuggestedTimes([]);
       const booking = json as BookingConfirmation;
       setConfirmation(booking);
       setCartItems([]);
@@ -838,6 +860,7 @@ const Services: React.FC = () => {
                         onChange={(event) => {
                           setServiceDate(event.target.value);
                           setSubmissionError(null);
+                          setSuggestedTimes([]);
                           setConfirmation(null);
                         }}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
@@ -851,6 +874,7 @@ const Services: React.FC = () => {
                         onChange={(event) => {
                           setServiceTime(event.target.value);
                           setSubmissionError(null);
+                          setSuggestedTimes([]);
                           setConfirmation(null);
                         }}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
@@ -902,11 +926,39 @@ const Services: React.FC = () => {
                 >
                   {isSubmitting ? 'Submitting...' : 'Review & Confirm'}
                 </button>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {submissionError && (
-                    <p className="text-xs text-red-600" role="alert">
-                      {submissionError}
-                    </p>
+                    <div className="space-y-2">
+                      <p className="text-xs text-red-600" role="alert">
+                        {submissionError}
+                      </p>
+                      {suggestedTimes.length > 0 && (
+                        <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-3 space-y-2">
+                          <p className="text-xs font-semibold text-yellow-800">Suggested alternative times:</p>
+                          <div className="space-y-1">
+                            {suggestedTimes.map((suggestion, index) => (
+                              <button
+                                key={index}
+                                onClick={() => {
+                                  // Parse the ISO date and convert to local date/time inputs
+                                  const suggestedDate = new Date(suggestion.date);
+                                  const dateString = suggestedDate.toISOString().split('T')[0];
+                                  const timeString = suggestedDate.toTimeString().slice(0, 5);
+
+                                  setServiceDate(dateString);
+                                  setServiceTime(timeString);
+                                  setSubmissionError(null);
+                                  setSuggestedTimes([]);
+                                }}
+                                className="block w-full text-left text-xs px-2 py-1.5 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-900 font-medium transition-colors"
+                              >
+                                {suggestion.dayName}: {suggestion.timeRange}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                   {confirmation && (
                     <div className="rounded-xl border border-brand-cyan/40 bg-brand-cyan/10 px-4 py-3 text-xs text-brand-dark space-y-1">

@@ -71,6 +71,48 @@ const formatAppointmentWindow = (isoString: string, timeZone: string) => {
   }
 };
 
+// Federal holidays in 2025 (YYYY-MM-DD format)
+const FEDERAL_HOLIDAYS_2025 = [
+  '2025-01-01', // New Year's Day
+  '2025-01-20', // MLK Jr. Day
+  '2025-02-17', // Presidents' Day
+  '2025-05-26', // Memorial Day
+  '2025-06-19', // Juneteenth
+  '2025-07-04', // Independence Day
+  '2025-09-01', // Labor Day
+  '2025-10-13', // Columbus Day
+  '2025-11-11', // Veterans Day
+  '2025-11-27', // Thanksgiving
+  '2025-11-28', // Thanksgiving (Friday)
+  '2025-12-25', // Christmas
+];
+
+const isBookableDate = (dateString: string): boolean => {
+  try {
+    const date = new Date(`${dateString}T00:00:00`);
+    const dayOfWeek = date.getDay();
+    const isSaturday = dayOfWeek === 6;
+    const isSunday = dayOfWeek === 0;
+    const isWeekend = isSaturday || isSunday;
+    const isFederalHoliday = FEDERAL_HOLIDAYS_2025.includes(dateString);
+
+    return isWeekend || isFederalHoliday;
+  } catch {
+    return false;
+  }
+};
+
+const isValidBookingTime = (timeString: string): boolean => {
+  if (!timeString) return false;
+  try {
+    const [hours] = timeString.split(':').map(Number);
+    // Business hours: 7 AM (7) to 6 PM (18)
+    return hours >= 7 && hours < 18;
+  } catch {
+    return false;
+  }
+};
+
 const CATEGORY_ORDER: ServiceCategory[] = ['indoor', 'outdoor', 'automotive', 'addons'];
 const SERVICE_TYPE_ORDER: ServiceFocus[] = [
   'carpet',
@@ -853,29 +895,48 @@ const Services: React.FC = () => {
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label className="text-sm font-medium text-brand-dark space-y-1">
-                      Preferred date
+                      Preferred date (weekends & federal holidays only)
                       <input
                         type="date"
                         value={serviceDate}
+                        min={new Date().toISOString().split('T')[0]}
                         onChange={(event) => {
-                          setServiceDate(event.target.value);
-                          setSubmissionError(null);
-                          setSuggestedTimes([]);
-                          setConfirmation(null);
+                          const newDate = event.target.value;
+                          // Only allow bookable dates
+                          if (isBookableDate(newDate)) {
+                            setServiceDate(newDate);
+                            setSubmissionError(null);
+                            setSuggestedTimes([]);
+                            setConfirmation(null);
+                          } else {
+                            // Invalid date selected - show error
+                            setSubmissionError('Please select a weekend or federal holiday.');
+                            setSuggestedTimes([]);
+                          }
                         }}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
                       />
                     </label>
                     <label className="text-sm font-medium text-brand-dark space-y-1">
-                      Preferred start time
+                      Preferred start time (7 AM - 6 PM)
                       <input
                         type="time"
                         value={serviceTime}
+                        min="07:00"
+                        max="17:59"
                         onChange={(event) => {
-                          setServiceTime(event.target.value);
-                          setSubmissionError(null);
-                          setSuggestedTimes([]);
-                          setConfirmation(null);
+                          const newTime = event.target.value;
+                          // Only allow valid business hours
+                          if (isValidBookingTime(newTime)) {
+                            setServiceTime(newTime);
+                            setSubmissionError(null);
+                            setSuggestedTimes([]);
+                            setConfirmation(null);
+                          } else {
+                            // Invalid time selected - show error
+                            setSubmissionError('Please select a time between 7 AM and 6 PM.');
+                            setSuggestedTimes([]);
+                          }
                         }}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
                       />
@@ -942,8 +1003,17 @@ const Services: React.FC = () => {
                                 onClick={() => {
                                   // Parse the ISO date and convert to local date/time inputs
                                   const suggestedDate = new Date(suggestion.date);
-                                  const dateString = suggestedDate.toISOString().split('T')[0];
-                                  const timeString = suggestedDate.toTimeString().slice(0, 5);
+
+                                  // Extract date as YYYY-MM-DD
+                                  const year = suggestedDate.getUTCFullYear();
+                                  const month = String(suggestedDate.getUTCMonth() + 1).padStart(2, '0');
+                                  const day = String(suggestedDate.getUTCDate()).padStart(2, '0');
+                                  const dateString = `${year}-${month}-${day}`;
+
+                                  // Extract time as HH:MM
+                                  const hours = String(suggestedDate.getUTCHours()).padStart(2, '0');
+                                  const minutes = String(suggestedDate.getUTCMinutes()).padStart(2, '0');
+                                  const timeString = `${hours}:${minutes}`;
 
                                   setServiceDate(dateString);
                                   setServiceTime(timeString);

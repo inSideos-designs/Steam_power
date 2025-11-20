@@ -10,6 +10,7 @@ export interface CalendarBookingPayload {
   attendeeEmail?: string;
   attendeeName?: string;
   extendedProperties?: Record<string, string | number | null | undefined>;
+  bookingId?: string;
 }
 
 const CALENDAR_SCOPES = 'https://www.googleapis.com/auth/calendar';
@@ -20,12 +21,21 @@ let authClient: any = null;
 const normalisePrivateKey = (key: string) => {
   let normalised = key;
 
+  // Handle escaped newlines (\\n -> \n)
   if (normalised.includes('\\n')) {
     normalised = normalised.replace(/\\n/g, '\n');
   }
 
   // Ensure Windows-style newlines or stray carriage returns don't break OpenSSL parsing
   normalised = normalised.replace(/\r\n?/g, '\n');
+
+  // Ensure BEGIN and END markers are on their own lines
+  normalised = normalised
+    .replace(/-----BEGIN[^-]*-----\s*/g, (match) => match.trim() + '\n')
+    .replace(/\s*-----END[^-]*-----/, (match) => '\n' + match.trim());
+
+  // Clean up any multiple blank lines
+  normalised = normalised.replace(/\n\s*\n+/g, '\n');
 
   return normalised.trim();
 };
@@ -232,9 +242,14 @@ export const createCalendarBooking = async (
 
     console.log('[calendar] Creating event with calendarId:', calendarId);
 
+    // Use requestId to prevent duplicate events if the request is retried
+    // This makes the operation idempotent - same requestId = same event
+    const requestId = payload.bookingId || `booking-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     const response = await calendar.events.insert({
       calendarId,
       requestBody: request,
+      requestId,
       sendUpdates: 'none',
     });
 

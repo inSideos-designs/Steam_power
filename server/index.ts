@@ -12,6 +12,11 @@ import {
 } from './googleCalendar';
 import { listUpcomingEvents, getAvailableSlots, isTimeSlotAvailable } from './googleCalendarOAuth';
 import { hasEmailConfig, sendBookingConfirmation } from './email';
+import {
+  isValidBookingTime,
+  suggestAlternativeTimes,
+  formatSuggestedTimes,
+} from './availability';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -168,10 +173,36 @@ app.post('/api/bookings', async (req, res) => {
 
   const timeZone = typeof body.timeZone === 'string' && body.timeZone ? body.timeZone : 'UTC';
 
+  // Check if booking is within allowed days and business hours
+  const bookingValidation = isValidBookingTime(startDate, endDate);
+  if (!bookingValidation.valid) {
+    const suggestions = suggestAlternativeTimes(startDate, endDate, durationMinutes);
+    const suggestedTimesText = formatSuggestedTimes(suggestions);
+    return res.status(400).json({
+      error: bookingValidation.reason || 'Invalid booking time.',
+      suggestedTimes: suggestions.map((s) => ({
+        date: s.start.toISOString(),
+        dayName: s.dayName,
+        timeRange: s.timeRange,
+      })),
+      suggestedTimesText,
+    });
+  }
+
   try {
     const hasConflict = await checkCalendarConflicts(startDate.toISOString(), endDate.toISOString());
     if (hasConflict) {
-      return res.status(409).json({ error: 'That time is no longer available. Please pick a different slot.' });
+      const suggestions = suggestAlternativeTimes(startDate, endDate, durationMinutes);
+      const suggestedTimesText = formatSuggestedTimes(suggestions);
+      return res.status(409).json({
+        error: 'That time is no longer available. Please pick a different slot.',
+        suggestedTimes: suggestions.map((s) => ({
+          date: s.start.toISOString(),
+          dayName: s.dayName,
+          timeRange: s.timeRange,
+        })),
+        suggestedTimesText,
+      });
     }
 
     const serviceSummaryLines = cartItems.map(

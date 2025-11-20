@@ -133,6 +133,10 @@ const getCalendarClient = async () => {
   return { calendar, calendarId };
 };
 
+/**
+ * Check for conflicts across primary calendar and shared calendars.
+ * Prevents double booking on any calendar the service account has access to.
+ */
 export const checkCalendarConflicts = async (
   startIso: string,
   endIso: string
@@ -140,17 +144,44 @@ export const checkCalendarConflicts = async (
   try {
     const { calendar, calendarId } = await getCalendarClient();
 
-    const response = await calendar.events.list({
-      calendarId,
-      timeMin: startIso,
-      timeMax: endIso,
-      singleEvents: true,
-      orderBy: 'startTime',
-      maxResults: 1,
-    });
+    // Get all calendars the service account has access to
+    const calendarsList = await calendar.calendarList.list();
+    const calendars = calendarsList.data.items ?? [];
 
-    const items = response.data.items ?? [];
-    return items.some((event) => event.status !== 'cancelled');
+    console.log(`[calendar] Checking conflicts across ${calendars.length} calendar(s)`);
+
+    // Check each calendar for conflicts
+    for (const cal of calendars) {
+      if (!cal.id) continue;
+
+      try {
+        const response = await calendar.events.list({
+          calendarId: cal.id,
+          timeMin: startIso,
+          timeMax: endIso,
+          singleEvents: true,
+          orderBy: 'startTime',
+          maxResults: 1,
+        });
+
+        const items = response.data.items ?? [];
+        const hasConflict = items.some((event) => event.status !== 'cancelled');
+
+        if (hasConflict) {
+          console.log(`[calendar] Conflict found in calendar: ${cal.summary || cal.id}`);
+          return true;
+        }
+      } catch (calError) {
+        // Log but continue checking other calendars
+        console.warn(
+          `[calendar] Could not check calendar ${cal.summary || cal.id}:`,
+          calError instanceof Error ? calError.message : 'Unknown error'
+        );
+      }
+    }
+
+    console.log('[calendar] No conflicts found across all calendars');
+    return false;
   } catch (error) {
     console.error('[calendar] Error checking conflicts:', error);
     throw error;

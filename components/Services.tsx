@@ -113,6 +113,56 @@ const isValidBookingTime = (timeString: string): boolean => {
   }
 };
 
+// Generate all available dates for the next 90 days that are bookable (weekends + holidays)
+const generateAvailableDates = (): Array<{ dateString: string; displayLabel: string }> => {
+  const dates: Array<{ dateString: string; displayLabel: string }> = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Check next 90 days
+  for (let i = 0; i < 90; i++) {
+    const checkDate = new Date(today);
+    checkDate.setDate(checkDate.getDate() + i);
+
+    const dateString = checkDate.toISOString().split('T')[0];
+
+    // Check if this date is bookable
+    if (isBookableDate(dateString)) {
+      const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
+      const monthDay = checkDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      dates.push({
+        dateString,
+        displayLabel: `${dayName}, ${monthDay}`,
+      });
+    }
+  }
+
+  return dates;
+};
+
+// Generate all available times (7 AM to 5 PM in hourly increments)
+const generateAvailableTimes = (): Array<{ timeString: string; displayLabel: string }> => {
+  const times: Array<{ timeString: string; displayLabel: string }> = [];
+
+  // 7 AM (07:00) through 5 PM (17:00) - 7 hours of operation
+  for (let hour = 7; hour < 18; hour++) {
+    const hourString = String(hour).padStart(2, '0');
+    const timeString = `${hourString}:00`;
+
+    // Format as 12-hour time
+    const displayLabel =
+      hour === 12
+        ? '12:00 PM'
+        : hour < 12
+          ? `${hour}:00 AM`
+          : `${hour - 12}:00 PM`;
+
+    times.push({ timeString, displayLabel });
+  }
+
+  return times;
+};
+
 const CATEGORY_ORDER: ServiceCategory[] = ['indoor', 'outdoor', 'automotive', 'addons'];
 const SERVICE_TYPE_ORDER: ServiceFocus[] = [
   'carpet',
@@ -895,51 +945,44 @@ const Services: React.FC = () => {
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label className="text-sm font-medium text-brand-dark space-y-1">
-                      Preferred date (weekends & federal holidays only)
-                      <input
-                        type="date"
+                      Preferred date
+                      <select
                         value={serviceDate}
-                        min={new Date().toISOString().split('T')[0]}
                         onChange={(event) => {
-                          const newDate = event.target.value;
-                          // Only allow bookable dates
-                          if (isBookableDate(newDate)) {
-                            setServiceDate(newDate);
-                            setSubmissionError(null);
-                            setSuggestedTimes([]);
-                            setConfirmation(null);
-                          } else {
-                            // Invalid date selected - show error
-                            setSubmissionError('Please select a weekend or federal holiday.');
-                            setSuggestedTimes([]);
-                          }
+                          setServiceDate(event.target.value);
+                          setSubmissionError(null);
+                          setSuggestedTimes([]);
+                          setConfirmation(null);
                         }}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
-                      />
+                      >
+                        <option value="">Select a date...</option>
+                        {generateAvailableDates().map((date) => (
+                          <option key={date.dateString} value={date.dateString}>
+                            {date.displayLabel}
+                          </option>
+                        ))}
+                      </select>
                     </label>
                     <label className="text-sm font-medium text-brand-dark space-y-1">
-                      Preferred start time (7 AM - 6 PM)
-                      <input
-                        type="time"
+                      Preferred start time
+                      <select
                         value={serviceTime}
-                        min="07:00"
-                        max="17:59"
                         onChange={(event) => {
-                          const newTime = event.target.value;
-                          // Only allow valid business hours
-                          if (isValidBookingTime(newTime)) {
-                            setServiceTime(newTime);
-                            setSubmissionError(null);
-                            setSuggestedTimes([]);
-                            setConfirmation(null);
-                          } else {
-                            // Invalid time selected - show error
-                            setSubmissionError('Please select a time between 7 AM and 6 PM.');
-                            setSuggestedTimes([]);
-                          }
+                          setServiceTime(event.target.value);
+                          setSubmissionError(null);
+                          setSuggestedTimes([]);
+                          setConfirmation(null);
                         }}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
-                      />
+                      >
+                        <option value="">Select a time...</option>
+                        {generateAvailableTimes().map((time) => (
+                          <option key={time.timeString} value={time.timeString}>
+                            {time.displayLabel}
+                          </option>
+                        ))}
+                      </select>
                     </label>
                   </div>
                   <label className="text-sm font-medium text-brand-dark space-y-1">

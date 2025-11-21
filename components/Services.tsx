@@ -2,6 +2,7 @@
 import React from 'react';
 import type { Service, ServiceCategory, ServiceFocus } from '../types';
 import { SERVICES } from '../constants';
+import AddressMap from './AddressMap';
 
 type CartLineItem = {
   service: Service;
@@ -316,6 +317,7 @@ const Services: React.FC = () => {
   const [customerName, setCustomerName] = React.useState('');
   const [customerEmail, setCustomerEmail] = React.useState('');
   const [customerPhone, setCustomerPhone] = React.useState('');
+  const [customerAddress, setCustomerAddress] = React.useState('');
   const [customerNotes, setCustomerNotes] = React.useState('');
   const [serviceDate, setServiceDate] = React.useState('');
   const [serviceTime, setServiceTime] = React.useState('');
@@ -508,6 +510,7 @@ const Services: React.FC = () => {
         name: customerName.trim(),
         email: customerEmail.trim(),
         phone: customerPhone.trim() || undefined,
+        address: customerAddress.trim() || undefined,
       },
       notes: customerNotes.trim() ? customerNotes.trim() : undefined,
       requestedStart: requestedStartIso,
@@ -943,6 +946,25 @@ const Services: React.FC = () => {
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
                     />
                   </label>
+                  <label className="text-sm font-medium text-brand-dark space-y-1">
+                    Service Address
+                    <input
+                      type="text"
+                      value={customerAddress}
+                      onChange={(event) => {
+                        setCustomerAddress(event.target.value);
+                        setSubmissionError(null);
+                        setConfirmation(null);
+                      }}
+                      placeholder="Street address for service"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                    />
+                  </label>
+                  {customerAddress && (
+                    <div>
+                      <AddressMap customerAddress={customerAddress} />
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label className="text-sm font-medium text-brand-dark space-y-1">
                       Preferred date

@@ -16,9 +16,12 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "googleapis": "^133.0.0",
+    "leaflet": "^1.9.4",
     "nodemailer": "^6.9.15",
+    "open-location-code": "^1.0.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

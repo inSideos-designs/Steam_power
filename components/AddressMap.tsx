@@ -1,5 +1,6 @@
 import React from 'react';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface AddressMapProps {
   customerAddress?: string;
@@ -25,7 +26,10 @@ const AddressMap: React.FC<AddressMapProps> = ({
 
     // Initialize map if not already done
     if (!mapInstanceRef.current) {
-      mapInstanceRef.current = L.map(mapRef.current).setView([40.4208, -74.1908], 11);
+      mapInstanceRef.current = L.map(mapRef.current, {
+        zoomControl: true,
+        dragging: true,
+      }).setView([40.4208, -74.1908], 11);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
@@ -115,7 +119,7 @@ const AddressMap: React.FC<AddressMapProps> = ({
       <div
         ref={mapRef}
         className="w-full rounded-lg border border-gray-200 shadow-sm"
-        style={{ height: '300px', minHeight: '300px' }}
+        style={{ height: '300px', minHeight: '300px', position: 'relative', zIndex: 0 }}
       />
       {travelTime && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

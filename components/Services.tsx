@@ -592,9 +592,9 @@ const Services: React.FC = () => {
       const json = await response.json().catch(() => null);
       if (!response.ok) {
         // Handle error response with optional suggested times
-        const errorData = json as BookingError;
-        setSuggestedTimes(errorData.suggestedTimes || []);
-        throw new Error(errorData.error ?? 'Unable to complete your reservation right now.');
+        const errorData = json as BookingError | null;
+        setSuggestedTimes(errorData?.suggestedTimes || []);
+        throw new Error(errorData?.error ?? 'Unable to complete your reservation right now.');
       }
 
       if (!json) {

@@ -104,6 +104,49 @@ app.post('/api/calendar/check-availability', async (req, res) => {
   }
 });
 
+app.get('/api/calendar/booked-times', async (req, res) => {
+  try {
+    const dateString = req.query.date as string;
+    if (!dateString) {
+      return res.status(400).json({ error: 'date query parameter required (YYYY-MM-DD)' });
+    }
+
+    // Parse the date
+    const date = new Date(`${dateString}T00:00:00Z`);
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Get booked events for this day
+    const events = await listUpcomingEvents(100);
+    const bookedTimes = events.events
+      .filter((event) => {
+        const eventDate = new Date(event.start || '');
+        return (
+          eventDate >= startOfDay &&
+          eventDate < new Date(endOfDay.getTime() + 1000)
+        );
+      })
+      .map((event) => ({
+        start: event.start,
+        end: event.end,
+        summary: event.summary,
+      }));
+
+    res.json({
+      date: dateString,
+      bookedTimes,
+    });
+  } catch (error) {
+    console.error('[calendar] Error fetching booked times:', error);
+    res.status(500).json({
+      error: 'Unable to fetch booked times. Make sure you have authenticated with Google Calendar.',
+    });
+  }
+});
+
 app.post('/api/bookings', async (req, res) => {
   if (!hasGoogleCalendarConfig()) {
     return res.status(500).json({ error: 'Google Calendar credentials are missing on the server.' });

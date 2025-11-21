@@ -3,6 +3,13 @@ import React from 'react';
 import type { Service, ServiceCategory, ServiceFocus } from '../types';
 import { SERVICES } from '../constants';
 import AddressMap from './AddressMap';
+import {
+  calculateAvailableTimeSlots,
+  getAvailableSlots,
+  formatTimeSlotInfo,
+  type AvailableTimeSlot,
+  type BookedSlot,
+} from './timeSlotCalculator';
 
 type CartLineItem = {
   service: Service;
@@ -326,6 +333,10 @@ const Services: React.FC = () => {
   const [submissionError, setSubmissionError] = React.useState<string | null>(null);
   const [suggestedTimes, setSuggestedTimes] = React.useState<SuggestedTime[]>([]);
   const [confirmation, setConfirmation] = React.useState<BookingConfirmation | null>(null);
+  const [dynamicTimeSlots, setDynamicTimeSlots] = React.useState<AvailableTimeSlot[]>([]);
+  const [bookedTimes, setBookedTimes] = React.useState<BookedSlot[]>([]);
+  const [travelTimeMinutes, setTravelTimeMinutes] = React.useState(0);
+  const [isLoadingTimes, setIsLoadingTimes] = React.useState(false);
 
   const availableServiceTypes = React.useMemo(() => {
     const categories = SERVICES.filter((service) => service.category === selectedCategory);
@@ -339,6 +350,58 @@ const Services: React.FC = () => {
       setSelectedFocus(availableServiceTypes[0] ?? 'carpet');
     }
   }, [availableServiceTypes, selectedFocus]);
+
+  // Fetch booked times and calculate available time slots when date/address/services change
+  React.useEffect(() => {
+    const fetchAndCalculateSlots = async () => {
+      if (!serviceDate || !customerAddress) {
+        setDynamicTimeSlots(generateAvailableTimes().map((t) => ({
+          ...t,
+          isAvailable: true,
+        })));
+        return;
+      }
+
+      try {
+        setIsLoadingTimes(true);
+
+        // Fetch booked times for the selected date
+        const response = await fetch(`/api/calendar/booked-times?date=${serviceDate}`);
+        const data = await response.json();
+        setBookedTimes(data.bookedTimes || []);
+
+        // Calculate travel time from address (simplified - using average 15 min for now)
+        // In a real app, you'd call a routing API here
+        // For now, we'll estimate based on distance
+        const estimatedTravelTime = 20; // Default 20 minutes
+        setTravelTimeMinutes(estimatedTravelTime);
+
+        // Get total service duration from cart
+        const serviceDuration = totalDurationMinutes > 0 ? totalDurationMinutes : 60;
+
+        // Calculate available slots
+        const slots = calculateAvailableTimeSlots(
+          serviceDate,
+          serviceDuration,
+          estimatedTravelTime,
+          data.bookedTimes || []
+        );
+
+        setDynamicTimeSlots(slots);
+      } catch (error) {
+        console.error('[booking] Error fetching booked times:', error);
+        // Fall back to static time slots
+        setDynamicTimeSlots(generateAvailableTimes().map((t) => ({
+          ...t,
+          isAvailable: true,
+        })));
+      } finally {
+        setIsLoadingTimes(false);
+      }
+    };
+
+    fetchAndCalculateSlots();
+  }, [serviceDate, customerAddress, cartItems]);
 
   const servicesForSelection = React.useMemo(
     () =>
@@ -988,6 +1051,7 @@ const Services: React.FC = () => {
                     </label>
                     <label className="text-sm font-medium text-brand-dark space-y-1">
                       Preferred start time
+                      {isLoadingTimes && <span className="text-xs text-gray-500 ml-2">(Loading...)</span>}
                       <select
                         value={serviceTime}
                         onChange={(event) => {
@@ -996,15 +1060,26 @@ const Services: React.FC = () => {
                           setSuggestedTimes([]);
                           setConfirmation(null);
                         }}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan disabled:bg-gray-100 disabled:text-gray-500"
+                        disabled={isLoadingTimes}
                       >
                         <option value="">Select a time...</option>
-                        {generateAvailableTimes().map((time) => (
-                          <option key={time.timeString} value={time.timeString}>
-                            {time.displayLabel}
+                        {dynamicTimeSlots.map((slot) => (
+                          <option
+                            key={slot.timeString}
+                            value={slot.timeString}
+                            disabled={!slot.isAvailable}
+                          >
+                            {slot.displayLabel}
+                            {!slot.isAvailable && ` (${slot.reason})`}
                           </option>
                         ))}
                       </select>
+                      {dynamicTimeSlots.length > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {getAvailableSlots(dynamicTimeSlots).length} of {dynamicTimeSlots.length} slots available
+                        </p>
+                      )}
                     </label>
                   </div>
                   <label className="text-sm font-medium text-brand-dark space-y-1">

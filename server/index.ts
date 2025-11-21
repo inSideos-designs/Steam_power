@@ -146,9 +146,11 @@ app.get('/api/calendar/booked-times', async (req, res) => {
   } catch (error) {
     console.error('[calendar] Error fetching booked times:', error instanceof Error ? error.message : error);
     console.error('[calendar] Full error:', error);
-    res.status(500).json({
-      error: 'Unable to fetch booked times. Make sure you have authenticated with Google Calendar.',
-      details: error instanceof Error ? error.message : 'Unknown error',
+    // Return empty array gracefully - conflicts will still be checked at booking time
+    res.json({
+      date: dateString,
+      bookedTimes: [],
+      warning: 'Could not fetch calendar, showing all times as available',
     });
   }
 });

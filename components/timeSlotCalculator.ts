@@ -52,6 +52,7 @@ const generateHourlySlots = (): AvailableTimeSlot[] => {
  * Accounts for service duration and 30-minute buffer
  */
 const isTimeSlotConflict = (
+  selectedDate: string,
   slotStartHour: number,
   serviceDurationMinutes: number,
   travelTimeMinutes: number,
@@ -61,9 +62,8 @@ const isTimeSlotConflict = (
   const bufferMinutes = 30;
   const totalJobDurationMinutes = serviceDurationMinutes + bufferMinutes;
 
-  // Calculate slot times
-  const slotStart = new Date();
-  slotStart.setHours(slotStartHour, 0, 0, 0);
+  // Calculate slot times using the selected date
+  const slotStart = new Date(`${selectedDate}T${String(slotStartHour).padStart(2, '0')}:00:00Z`);
 
   const slotEnd = new Date(slotStart);
   slotEnd.setMinutes(slotEnd.getMinutes() + serviceDurationMinutes);
@@ -104,7 +104,7 @@ export const calculateAvailableTimeSlots = (
     if (!hourMatch) return slot;
 
     const hour = parseInt(hourMatch[1], 10);
-    const hasConflict = isTimeSlotConflict(hour, serviceDurationMinutes, travelTimeMinutes, bookedTimes);
+    const hasConflict = isTimeSlotConflict(selectedDate, hour, serviceDurationMinutes, travelTimeMinutes, bookedTimes);
 
     if (hasConflict) {
       return {

@@ -79,6 +79,12 @@ const isTimeSlotConflict = (
 
     // Check if there's any overlap
     if (slotStart < bookedEnd && timeNeeded > bookedStart) {
+      console.log(`[conflict] ${slotStartHour}:00 conflicts:`, {
+        slotStart: slotStart.toISOString(),
+        timeNeeded: timeNeeded.toISOString(),
+        bookedStart: bookedStart.toISOString(),
+        bookedEnd: bookedEnd.toISOString(),
+      });
       return true; // Conflict found
     }
   }

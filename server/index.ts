@@ -120,7 +120,10 @@ app.get('/api/calendar/booked-times', async (req, res) => {
     endOfDay.setHours(23, 59, 59, 999);
 
     // Get booked events for this day
+    console.log('[calendar] Fetching events for date:', dateString);
     const events = await listUpcomingEvents(100);
+    console.log('[calendar] Retrieved', events.events.length, 'events from calendar');
+
     const bookedTimes = events.events
       .filter((event) => {
         const eventDate = new Date(event.start || '');
@@ -135,14 +138,17 @@ app.get('/api/calendar/booked-times', async (req, res) => {
         summary: event.summary,
       }));
 
+    console.log('[calendar] Filtered to', bookedTimes.length, 'events for', dateString);
     res.json({
       date: dateString,
       bookedTimes,
     });
   } catch (error) {
-    console.error('[calendar] Error fetching booked times:', error);
+    console.error('[calendar] Error fetching booked times:', error instanceof Error ? error.message : error);
+    console.error('[calendar] Full error:', error);
     res.status(500).json({
       error: 'Unable to fetch booked times. Make sure you have authenticated with Google Calendar.',
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });

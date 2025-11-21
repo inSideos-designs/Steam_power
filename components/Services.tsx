@@ -368,6 +368,7 @@ const Services: React.FC = () => {
         // Fetch booked times for the selected date
         const response = await fetch(`/api/calendar/booked-times?date=${serviceDate}`);
         const data = await response.json();
+        console.log('[booking] Booked times for', serviceDate, ':', data.bookedTimes);
         setBookedTimes(data.bookedTimes || []);
 
         // Calculate travel time from address (simplified - using average 15 min for now)
@@ -387,6 +388,7 @@ const Services: React.FC = () => {
           data.bookedTimes || []
         );
 
+        console.log('[booking] Calculated slots:', slots);
         setDynamicTimeSlots(slots);
       } catch (error) {
         console.error('[booking] Error fetching booked times:', error);

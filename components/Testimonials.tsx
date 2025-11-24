@@ -11,15 +11,15 @@ const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 
 const TestimonialCard: React.FC<{ testimonial: Testimonial }> = ({ testimonial }) => (
-  <div className="bg-white rounded-lg shadow-md p-8 flex flex-col items-center text-center">
-    <img src={testimonial.avatarUrl} alt={testimonial.name} className="w-20 h-20 rounded-full mb-4 border-4 border-brand-light-blue"/>
-    <div className="flex text-yellow-400 mb-4">
-      {[...Array(5)].map((_, i) => <StarIcon key={i}/>)}
+  <div className="glass-panel rounded-2xl p-8 flex flex-col items-center text-center hover:bg-white/10 transition-colors duration-300">
+    <img src={testimonial.avatarUrl} alt={testimonial.name} className="w-20 h-20 rounded-full mb-6 border-4 border-brand-cyan shadow-lg" />
+    <div className="flex text-yellow-400 mb-6 gap-1">
+      {[...Array(5)].map((_, i) => <StarIcon key={i} />)}
     </div>
-    <p className="text-gray-600 italic mb-4">"{testimonial.quote}"</p>
+    <p className="text-gray-200 italic mb-6 text-lg leading-relaxed">"{testimonial.quote}"</p>
     <div className="mt-auto">
-      <p className="font-bold text-brand-dark">{testimonial.name}</p>
-      <p className="text-sm text-gray-500">{testimonial.location}</p>
+      <p className="font-bold text-white text-lg">{testimonial.name}</p>
+      <p className="text-sm text-brand-cyan font-medium">{testimonial.location}</p>
     </div>
   </div>
 );
@@ -27,11 +27,11 @@ const TestimonialCard: React.FC<{ testimonial: Testimonial }> = ({ testimonial }
 
 const Testimonials: React.FC = () => {
   return (
-    <section id="testimonials" className="py-20 bg-gray-100">
+    <section id="testimonials" className="py-24 relative z-10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-brand-dark">What Our Customers Say</h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold text-white drop-shadow-md">What Our Customers Say</h2>
+          <p className="mt-4 text-lg text-premium-light/80 max-w-2xl mx-auto">
             We're proud of our happy customers. Here's what they have to say about us.
           </p>
         </div>

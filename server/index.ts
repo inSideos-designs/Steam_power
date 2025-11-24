@@ -7,7 +7,6 @@ import { SERVICES } from '../data/services';
 import { calculateCartTotals, resolveCartItems } from './services';
 import {
   hasGoogleCalendarConfig,
-  checkCalendarConflicts,
   createCalendarBooking,
 } from './googleCalendar';
 import { listUpcomingEvents, getAvailableSlots, isTimeSlotAvailable } from './googleCalendarOAuth';
@@ -144,7 +143,7 @@ app.get('/api/calendar/booked-times', async (req, res) => {
     console.error('[calendar] Error fetching booked times:', error instanceof Error ? error.message : error);
     // Return empty array gracefully - conflicts will still be checked at booking time
     res.json({
-      date: dateString,
+      date: req.query.date as string,
       bookedTimes: [],
       warning: 'Could not fetch calendar, showing all times as available',
     });
@@ -160,19 +159,19 @@ app.post('/api/bookings', async (req, res) => {
 
   const rawItems: { serviceId: string; quantity: number }[] = Array.isArray(body.items)
     ? body.items
-        .filter((item: any) => typeof item?.serviceId === 'string')
-        .map((item: any) => ({
-          serviceId: item.serviceId,
-          quantity: Number.isFinite(item.quantity) ? item.quantity : 1,
-        }))
+      .filter((item: any) => typeof item?.serviceId === 'string')
+      .map((item: any) => ({
+        serviceId: item.serviceId,
+        quantity: Number.isFinite(item.quantity) ? item.quantity : 1,
+      }))
     : typeof body.serviceId === 'string'
-    ? [
+      ? [
         {
           serviceId: body.serviceId,
           quantity: Number.isFinite(body.quantity) ? body.quantity : 1,
         },
       ]
-    : [];
+      : [];
 
   if (!rawItems.length) {
     return res.status(400).json({ error: 'At least one service selection is required.' });
@@ -236,22 +235,11 @@ app.post('/api/bookings', async (req, res) => {
     });
   }
 
-  try {
-    const hasConflict = await checkCalendarConflicts(startDate.toISOString(), endDate.toISOString());
-    if (hasConflict) {
-      const suggestions = suggestAlternativeTimes(startDate, endDate, durationMinutes);
-      const suggestedTimesText = formatSuggestedTimes(suggestions);
-      return res.status(409).json({
-        error: 'That time is no longer available. Please pick a different slot.',
-        suggestedTimes: suggestions.map((s) => ({
-          date: s.start.toISOString(),
-          dayName: s.dayName,
-          timeRange: s.timeRange,
-        })),
-        suggestedTimesText,
-      });
-    }
+  // Double bookings are allowed, so we skip the conflict check.
+  // const hasConflict = await checkCalendarConflicts(startDate.toISOString(), endDate.toISOString());
+  // if (hasConflict) { ... }
 
+  try {
     const serviceSummaryLines = cartItems.map(
       (item) => `${item.quantity} × ${item.service.title} (${item.service.price})`,
     );

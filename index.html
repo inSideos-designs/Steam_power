@@ -1,66 +1,126 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ade8f4" />
-    <title>Steam Power Cleaning</title>
-    <meta name="description" content="Professional steam cleaning services for your home. Expert carpet, tile, upholstery, and power washing services." />
 
-    <!-- Open Graph Tags for Social Media & iMessage Preview -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://steampower.biz/" />
-    <meta property="og:title" content="Steam Power Cleaning" />
-    <meta property="og:description" content="Professional steam cleaning services for your home. Expert carpet, tile, upholstery, and power washing services." />
-    <meta property="og:image" content="https://steampower.biz/steam-power-hero.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Steam Power Cleaning professional service" />
-    <meta property="og:site_name" content="Steam Power Cleaning" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ade8f4" />
+  <title>Steam Power Cleaning</title>
+  <meta name="description"
+    content="Professional steam cleaning services for your home. Expert carpet, tile, upholstery, and power washing services." />
 
-    <!-- Twitter Card Tags -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:title" content="Steam Power Cleaning" />
-    <meta property="twitter:description" content="Professional steam cleaning services for your home. Expert carpet, tile, upholstery, and power washing services." />
-    <meta property="twitter:image" content="https://steampower.biz/steam-power-hero.jpg" />
+  <!-- Open Graph Tags for Social Media & iMessage Preview -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://steampower.biz/" />
+  <meta property="og:title" content="Steam Power Cleaning" />
+  <meta property="og:description"
+    content="Professional steam cleaning services for your home. Expert carpet, tile, upholstery, and power washing services." />
+  <meta property="og:image" content="https://steampower.biz/steam-power-hero.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Steam Power Cleaning professional service" />
+  <meta property="og:site_name" content="Steam Power Cleaning" />
 
-    <!-- Apple Specific -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Steam Power" />
+  <!-- Twitter Card Tags -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:title" content="Steam Power Cleaning" />
+  <meta property="twitter:description"
+    content="Professional steam cleaning services for your home. Expert carpet, tile, upholstery, and power washing services." />
+  <meta property="twitter:image" content="https://steampower.biz/steam-power-hero.jpg" />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              'sans': ['Poppins', 'sans-serif'],
+  <!-- Apple Specific -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Steam Power" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sans': ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            'brand-blue': '#0077b6',
+            'brand-cyan': '#00b4d8',
+            'brand-light-blue': '#ade8f4',
+            'brand-dark': '#03045e',
+            'premium-dark': '#0a192f',
+            'premium-light': '#e6f1ff',
+            'premium-accent': '#64ffda',
+          },
+          animation: {
+            'steam': 'steam 3s ease-out infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            steam: {
+              '0%': { transform: 'translateY(0) scale(1)', opacity: '0.8' },
+              '50%': { transform: 'translateY(-100px) scale(1.1)', opacity: '0.4' },
+              '100%': { transform: 'translateY(-200px) scale(1.2)', opacity: '0' },
             },
-            colors: {
-              'brand-blue': '#0077b6',
-              'brand-cyan': '#00b4d8',
-              'brand-light-blue': '#ade8f4',
-              'brand-dark': '#03045e',
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
             }
           }
         }
       }
-    </script>
-    <style>
-      html {
-        scroll-behavior: smooth;
+    }
+  </script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    .glass-panel {
+      background: rgba(10, 25, 47, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .steam-container {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .steam-particle {
+      position: absolute;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+      border-radius: 50%;
+      animation: steam 4s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes steam {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 0.8;
       }
-    </style>
+
+      50% {
+        transform: translateY(-20px) scale(1.1);
+        opacity: 0.4;
+      }
+
+      100% {
+        transform: translateY(-40px) scale(1.2);
+        opacity: 0;
+      }
+    }
+  </style>
 </head>
-  <body class="bg-gray-50">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+
+<body class="bg-gray-50">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
 </html>

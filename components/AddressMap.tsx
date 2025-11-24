@@ -39,6 +39,11 @@ const AddressMap: React.FC<AddressMapProps> = ({
 
     const map = mapInstanceRef.current;
 
+    // Invalidate size to ensure map renders correctly if container size changed
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+
     // Clear existing markers
     map.eachLayer((layer) => {
       if (layer instanceof L.Marker) {

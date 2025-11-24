@@ -184,7 +184,7 @@ const SERVICE_TYPE_ORDER: ServiceFocus[] = [
   'products',
 ];
 
-const CATEGORY_DETAILS: Record<ServiceCategory, { label: string; description: string; lead: string }>= {
+const CATEGORY_DETAILS: Record<ServiceCategory, { label: string; description: string; lead: string }> = {
   indoor: {
     label: 'Indoor',
     description: 'Room-by-room carpet care, tiled surfaces, upholstery, mattresses, and interior windows.',
@@ -207,7 +207,7 @@ const CATEGORY_DETAILS: Record<ServiceCategory, { label: string; description: st
   },
 };
 
-const SERVICE_TYPE_DETAILS: Record<ServiceFocus, { label: string; description: string }>= {
+const SERVICE_TYPE_DETAILS: Record<ServiceFocus, { label: string; description: string }> = {
   carpet: {
     label: 'Carpet',
     description: 'Steam extraction that removes embedded soil, allergens, and lingering odors.',
@@ -618,24 +618,24 @@ const Services: React.FC = () => {
   };
 
   return (
-    <section id="services" className="py-24 bg-gray-100">
+    <section id="services" className="py-24 relative z-10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="max-w-3xl mx-auto text-center space-y-4">
           <p className="text-sm font-semibold text-brand-cyan uppercase tracking-widest">Build Your Cleaning Plan</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-brand-dark">Create your custom service cart</h2>
-          <p className="text-lg text-gray-600">
+          <h2 className="text-3xl md:text-5xl font-bold text-white drop-shadow-md">Create your custom service cart</h2>
+          <p className="text-lg text-premium-light/80">
             Choose services across indoor, outdoor, automotive, or add-on specialties. Bundle multiple items, pick your preferred appointment time, and we will confirm details and charge after the visit.
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-6 md:p-10 space-y-10">
+        <div className="glass-panel rounded-3xl shadow-2xl p-6 md:p-10 space-y-10">
           <div className="space-y-6">
             <div className="flex items-baseline justify-between flex-wrap gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">Step 1</p>
-                <h3 className="text-2xl font-bold text-brand-dark">Select a service category</h3>
+                <h3 className="text-2xl font-bold text-white">Select a service category</h3>
               </div>
-              <p className="text-sm text-gray-500 max-w-md">Switch between categories to see specially curated services. Prices shown include equipment, products, and travel.</p>
+              <p className="text-sm text-gray-300 max-w-md">Switch between categories to see specially curated services. Prices shown include equipment, products, and travel.</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {CATEGORY_ORDER.map((category) => {
@@ -646,16 +646,18 @@ const Services: React.FC = () => {
                     key={category}
                     type="button"
                     onClick={() => setSelectedCategory(category)}
-                    className={`text-left rounded-2xl border transition-all p-5 h-full ${
-                      isActive
-                        ? 'bg-gradient-to-br from-brand-cyan/10 via-white to-brand-blue/5 border-brand-cyan shadow-lg'
-                        : 'border-gray-200 hover:border-brand-cyan/60 hover:shadow-md bg-white'
-                    }`}
+                    className={`text-left rounded-2xl border transition-all p-5 h-full relative overflow-hidden group ${isActive
+                      ? 'bg-gradient-to-br from-brand-dark to-brand-blue border-brand-cyan shadow-lg text-white'
+                      : 'border-white/10 hover:border-brand-cyan/60 hover:shadow-md bg-white/5 hover:bg-white/10'
+                      }`}
                     aria-pressed={isActive}
                   >
-                    <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan mb-2">{detail.lead}</p>
-                    <p className="text-xl font-bold text-brand-dark mb-2">{detail.label}</p>
-                    <p className="text-sm text-gray-600 leading-relaxed">{detail.description}</p>
+                    <div className={`absolute inset-0 bg-brand-cyan/10 transform transition-transform duration-500 ${isActive ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'}`}></div>
+                    <div className="relative z-10">
+                      <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${isActive ? 'text-brand-cyan' : 'text-brand-cyan/70'}`}>{detail.lead}</p>
+                      <p className={`text-xl font-bold mb-2 ${isActive ? 'text-white' : 'text-gray-200'}`}>{detail.label}</p>
+                      <p className={`text-sm leading-relaxed ${isActive ? 'text-gray-200' : 'text-gray-400'}`}>{detail.description}</p>
+                    </div>
                   </button>
                 );
               })}
@@ -666,9 +668,9 @@ const Services: React.FC = () => {
             <div className="flex items-baseline justify-between flex-wrap gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">Step 2</p>
-                <h3 className="text-2xl font-bold text-brand-dark">Pick the focus area</h3>
+                <h3 className="text-2xl font-bold text-white">Pick the focus area</h3>
               </div>
-              <p className="text-sm text-gray-500 max-w-md">
+              <p className="text-sm text-gray-300 max-w-md">
                 Toggle between carpet, tile, upholstery, or window offerings tailored to your selected category.
               </p>
             </div>
@@ -681,11 +683,10 @@ const Services: React.FC = () => {
                     key={focus}
                     type="button"
                     onClick={() => setSelectedFocus(focus)}
-                    className={`px-4 py-2 rounded-full border text-sm font-semibold transition-colors ${
-                      isActive
-                        ? 'bg-brand-cyan text-white border-brand-cyan shadow-md'
-                        : 'border-gray-200 text-brand-dark hover:border-brand-cyan hover:text-brand-cyan'
-                    }`}
+                    className={`px-4 py-2 rounded-full border text-sm font-semibold transition-colors ${isActive
+                      ? 'bg-brand-cyan text-white border-brand-cyan shadow-md'
+                      : 'border-white/10 text-gray-300 hover:border-brand-cyan hover:text-brand-cyan hover:bg-white/5'
+                      }`}
                     aria-pressed={isActive}
                   >
                     {detail.label}
@@ -693,12 +694,12 @@ const Services: React.FC = () => {
                 );
               })}
             </div>
-            <p className="text-sm text-gray-500">{SERVICE_TYPE_DETAILS[selectedFocus]?.description}</p>
+            <p className="text-sm text-gray-400">{SERVICE_TYPE_DETAILS[selectedFocus]?.description}</p>
           </div>
 
           <div className="grid gap-8 xl:grid-cols-[1.6fr_1fr]">
             <div className="space-y-6">
-              <h4 className="text-lg font-semibold text-brand-dark">Service options</h4>
+              <h4 className="text-lg font-semibold text-white">Service options</h4>
               <div className="grid gap-6 md:grid-cols-2">
                 {servicesForSelection.map((service) => {
                   const quantity = quantities[service.id] ?? 1;
@@ -718,7 +719,7 @@ const Services: React.FC = () => {
                   return (
                     <div
                       key={service.id}
-                      className="rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col"
+                      className="rounded-2xl border border-white/10 bg-white/5 shadow-lg hover:bg-white/10 transition-all flex flex-col backdrop-blur-sm"
                     >
                       <img
                         src={service.imageUrl}
@@ -737,12 +738,12 @@ const Services: React.FC = () => {
                           <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">
                             {SERVICE_TYPE_DETAILS[service.serviceType].label}
                           </p>
-                          <h5 className="text-lg font-bold text-brand-dark">{service.title}</h5>
+                          <h5 className="text-lg font-bold text-white">{service.title}</h5>
                           {service.sizeLabel && !isAreaRug && (
-                            <p className="text-sm text-brand-blue font-semibold">{service.sizeLabel}</p>
+                            <p className="text-sm text-brand-cyan font-semibold">{service.sizeLabel}</p>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 leading-relaxed flex-grow">{service.description}</p>
+                        <p className="text-sm text-gray-300 leading-relaxed flex-grow">{service.description}</p>
 
                         {/* Custom Area Rug Sizing */}
                         {isAreaRug && (
@@ -833,13 +834,13 @@ const Services: React.FC = () => {
 
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-xl font-semibold text-brand-blue">
+                            <span className="text-xl font-semibold text-brand-cyan">
                               {isAreaRug ? rugPricing.priceFormatted : service.price}
                             </span>
                             <span className="text-sm text-gray-500">{formatDuration(service.durationMinutes)}</span>
                           </div>
                           <div className="flex items-center gap-4">
-                            <label className="flex items-center gap-2 text-sm font-medium text-brand-dark">
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
                               Qty
                               <input
                                 type="number"
@@ -847,7 +848,7 @@ const Services: React.FC = () => {
                                 max={10}
                                 value={quantity}
                                 onChange={(event) => handleQuantityChange(service.id, event.target.value)}
-                                className="w-16 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                                className="w-16 border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
                               />
                             </label>
                             <button
@@ -889,29 +890,29 @@ const Services: React.FC = () => {
             </div>
 
             <aside className="space-y-6">
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-5 space-y-4">
+              <div className="rounded-2xl border border-white/10 bg-white/5 shadow-lg p-5 space-y-4 backdrop-blur-sm">
                 <div className="flex items-baseline justify-between">
                   <div>
-                    <h4 className="text-lg font-semibold text-brand-dark">Cart summary</h4>
+                    <h4 className="text-lg font-semibold text-white">Cart summary</h4>
                     <p className="text-xs uppercase tracking-widest text-brand-cyan">Step 3</p>
                   </div>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-400">
                     {cartItems.length} item{cartItems.length === 1 ? '' : 's'}
                   </span>
                 </div>
                 <div className="space-y-4">
-                  {cartItems.length === 0 && <p className="text-sm text-gray-500">Add at least one service to start your booking.</p>}
+                  {cartItems.length === 0 && <p className="text-sm text-gray-400">Add at least one service to start your booking.</p>}
                   {cartItems.map((line) => {
                     const hasUnitPrice = typeof line.service.priceCents === 'number' && line.service.priceCents > 0;
                     const lineSubtotal = (line.service.priceCents ?? 0) * line.quantity;
                     const lineTotalLabel = hasUnitPrice ? formatCurrency(lineSubtotal) : 'Estimate pending';
                     return (
-                      <div key={line.service.id} className="rounded-xl border border-gray-100 p-4 space-y-3">
+                      <div key={line.service.id} className="rounded-xl border border-white/10 p-4 space-y-3 bg-white/5">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className="text-sm font-semibold text-brand-dark">{line.service.title}</p>
+                            <p className="text-sm font-semibold text-white">{line.service.title}</p>
                             {line.service.sizeLabel && (
-                              <p className="text-xs text-gray-500">{line.service.sizeLabel}</p>
+                              <p className="text-xs text-brand-cyan">{line.service.sizeLabel}</p>
                             )}
                           </div>
                           <button
@@ -922,38 +923,38 @@ const Services: React.FC = () => {
                             Remove
                           </button>
                         </div>
-                        <div className="flex items-center justify-between text-sm text-gray-600">
+                        <div className="flex items-center justify-between text-sm text-gray-300">
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => incrementCartItem(line.service, -1)}
-                              className="w-7 h-7 inline-flex items-center justify-center rounded-full border border-gray-200 hover:border-brand-cyan"
+                              className="w-7 h-7 inline-flex items-center justify-center rounded-full border border-white/20 hover:border-brand-cyan text-white"
                               aria-label={`Reduce quantity for ${line.service.title}`}
                             >
                               −
                             </button>
-                            <span className="font-semibold text-brand-dark">{line.quantity}</span>
+                            <span className="font-semibold text-white">{line.quantity}</span>
                             <button
                               type="button"
                               onClick={() => incrementCartItem(line.service, 1)}
-                              className="w-7 h-7 inline-flex items-center justify-center rounded-full border border-gray-200 hover:border-brand-cyan"
+                              className="w-7 h-7 inline-flex items-center justify-center rounded-full border border-white/20 hover:border-brand-cyan text-white"
                               aria-label={`Increase quantity for ${line.service.title}`}
                             >
                               +
                             </button>
                           </div>
-                          <span className="font-semibold text-brand-blue">{lineTotalLabel}</span>
+                          <span className="font-semibold text-brand-cyan">{lineTotalLabel}</span>
                         </div>
                       </div>
                     );
                   })}
                 </div>
-                <div className="border-t border-gray-200 pt-4 space-y-2 text-sm">
-                  <div className="flex justify-between text-brand-dark font-semibold">
+                <div className="border-t border-white/10 pt-4 space-y-2 text-sm">
+                  <div className="flex justify-between text-white font-semibold">
                     <span>Estimated total</span>
                     <span>{totalPriceCents > 0 ? formatCurrency(totalPriceCents) : 'Estimate pending'}</span>
                   </div>
-                  <div className="flex justify-between text-gray-500">
+                  <div className="flex justify-between text-gray-400">
                     <span>Service time</span>
                     <span>{totalDurationMinutes ? formatDuration(totalDurationMinutes) : 'TBD'}</span>
                   </div>
@@ -961,13 +962,13 @@ const Services: React.FC = () => {
                 </div>
               </div>
 
-              <form className="rounded-2xl border border-gray-200 bg-white shadow-sm p-5 space-y-4">
+              <form className="rounded-2xl border border-white/10 bg-white/5 shadow-lg p-5 space-y-4 backdrop-blur-sm">
                 <div className="flex items-baseline justify-between">
-                  <h4 className="text-lg font-semibold text-brand-dark">Reserve your time</h4>
+                  <h4 className="text-lg font-semibold text-white">Reserve your time</h4>
                   <p className="text-xs uppercase tracking-widest text-brand-cyan">Step 4</p>
                 </div>
                 <div className="grid gap-4">
-                  <label className="text-sm font-medium text-brand-dark space-y-1">
+                  <label className="text-sm font-medium text-gray-200 space-y-1">
                     Name
                     <input
                       type="text"
@@ -978,10 +979,10 @@ const Services: React.FC = () => {
                         setConfirmation(null);
                       }}
                       placeholder="How should we address you?"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
                     />
                   </label>
-                  <label className="text-sm font-medium text-brand-dark space-y-1">
+                  <label className="text-sm font-medium text-gray-200 space-y-1">
                     Email
                     <input
                       type="email"
@@ -992,10 +993,10 @@ const Services: React.FC = () => {
                         setConfirmation(null);
                       }}
                       placeholder="we'll send confirmation here"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
                     />
                   </label>
-                  <label className="text-sm font-medium text-brand-dark space-y-1">
+                  <label className="text-sm font-medium text-gray-200 space-y-1">
                     Phone (optional)
                     <input
                       type="tel"
@@ -1006,10 +1007,10 @@ const Services: React.FC = () => {
                         setConfirmation(null);
                       }}
                       placeholder="Helpful for day-of updates"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
                     />
                   </label>
-                  <label className="text-sm font-medium text-brand-dark space-y-1">
+                  <label className="text-sm font-medium text-gray-200 space-y-1">
                     Service Address
                     <input
                       type="text"
@@ -1020,7 +1021,7 @@ const Services: React.FC = () => {
                         setConfirmation(null);
                       }}
                       placeholder="Street address for service"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
                     />
                   </label>
                   {customerAddress && (
@@ -1029,7 +1030,7 @@ const Services: React.FC = () => {
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label className="text-sm font-medium text-brand-dark space-y-1">
+                    <label className="text-sm font-medium text-gray-200 space-y-1">
                       Preferred date
                       <select
                         value={serviceDate}
@@ -1039,7 +1040,7 @@ const Services: React.FC = () => {
                           setSuggestedTimes([]);
                           setConfirmation(null);
                         }}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                        className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
                       >
                         <option value="">Select a date...</option>
                         {generateAvailableDates().map((date) => (
@@ -1049,9 +1050,9 @@ const Services: React.FC = () => {
                         ))}
                       </select>
                     </label>
-                    <label className="text-sm font-medium text-brand-dark space-y-1">
+                    <label className="text-sm font-medium text-gray-200 space-y-1">
                       Preferred start time
-                      {isLoadingTimes && <span className="text-xs text-gray-500 ml-2">(Loading...)</span>}
+                      {isLoadingTimes && <span className="text-xs text-gray-400 ml-2">(Loading...)</span>}
                       <select
                         value={serviceTime}
                         onChange={(event) => {
@@ -1060,7 +1061,7 @@ const Services: React.FC = () => {
                           setSuggestedTimes([]);
                           setConfirmation(null);
                         }}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan disabled:bg-gray-100 disabled:text-gray-500"
+                        className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white disabled:bg-white/5 disabled:text-gray-500"
                         disabled={isLoadingTimes}
                       >
                         <option value="">Select a time...</option>
@@ -1076,13 +1077,13 @@ const Services: React.FC = () => {
                         ))}
                       </select>
                       {dynamicTimeSlots.length > 0 && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-400 mt-1">
                           {getAvailableSlots(dynamicTimeSlots).length} of {dynamicTimeSlots.length} slots available
                         </p>
                       )}
                     </label>
                   </div>
-                  <label className="text-sm font-medium text-brand-dark space-y-1">
+                  <label className="text-sm font-medium text-gray-200 space-y-1">
                     Time zone
                     <select
                       value={timeZone}
@@ -1091,7 +1092,7 @@ const Services: React.FC = () => {
                         setSubmissionError(null);
                         setConfirmation(null);
                       }}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
                     >
                       {TIME_ZONE_OPTIONS.map((zone) => (
                         <option key={zone} value={zone}>
@@ -1100,7 +1101,7 @@ const Services: React.FC = () => {
                       ))}
                     </select>
                   </label>
-                  <label className="text-sm font-medium text-brand-dark space-y-1">
+                  <label className="text-sm font-medium text-gray-200 space-y-1">
                     Notes for our technicians (optional)
                     <textarea
                       value={customerNotes}
@@ -1110,18 +1111,17 @@ const Services: React.FC = () => {
                       }}
                       rows={3}
                       placeholder="Gate codes, parking instructions, pets we should greet, or specific problem areas."
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
                     />
                   </label>
                 </div>
                 <button
                   type="button"
                   onClick={handleReservation}
-                  className={`w-full inline-flex items-center justify-center rounded-full py-3 text-sm font-semibold transition-colors ${
-                    isReadyToReserve && !isSubmitting
-                      ? 'bg-brand-cyan text-white hover:bg-brand-blue'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  }`}
+                  className={`w-full inline-flex items-center justify-center rounded-full py-3 text-sm font-semibold transition-colors ${isReadyToReserve && !isSubmitting
+                    ? 'bg-brand-cyan text-white hover:bg-brand-blue'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    }`}
                   disabled={!isReadyToReserve || isSubmitting}
                   aria-busy={isSubmitting}
                 >
@@ -1196,7 +1196,7 @@ const Services: React.FC = () => {
                       )}
                     </div>
                   )}
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     We will verify availability, email a confirmation with your appointment details, and capture payment after service completion.
                   </p>
                 </div>

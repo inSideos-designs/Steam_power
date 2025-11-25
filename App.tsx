@@ -12,16 +12,7 @@ const App: React.FC = () => {
   return (
     <div className="font-sans text-gray-800 bg-premium-dark min-h-screen relative overflow-x-hidden">
       {/* Global Steam Background */}
-      {/* Global Steam Background */}
-      <div className="steam-container">
-        <div className="fog-container">
-          <div className="fog-img"></div>
-          <div className="fog-img-2"></div>
-        </div>
-        <div className="steam-vent" style={{ left: '20%', animationDelay: '0s' }}></div>
-        <div className="steam-vent" style={{ left: '50%', animationDelay: '2s' }}></div>
-        <div className="steam-vent" style={{ left: '80%', animationDelay: '1s' }}></div>
-      </div>
+      {/* Global Steam Background - Removed as per user request */}
 
       <div className="relative z-10">
         <Header />

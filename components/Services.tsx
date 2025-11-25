@@ -2,7 +2,6 @@
 import React from 'react';
 import type { Service, ServiceCategory, ServiceFocus } from '../types';
 import { SERVICES } from '../constants';
-import AddressMap from './AddressMap';
 import {
   calculateAvailableTimeSlots,
   getAvailableSlots,
@@ -1024,11 +1023,6 @@ const Services: React.FC = () => {
                       className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
                     />
                   </label>
-                  {customerAddress && (
-                    <div>
-                      <AddressMap customerAddress={customerAddress} />
-                    </div>
-                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label className="text-sm font-medium text-gray-200 space-y-1">
                       Preferred date

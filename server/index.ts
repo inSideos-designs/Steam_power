@@ -9,6 +9,7 @@ import {
   hasGoogleCalendarConfig,
   createCalendarBooking,
   checkAvailability,
+  getSuggestedTimes,
 } from './googleCalendar';
 import { listUpcomingEvents, getAvailableSlots, isTimeSlotAvailable } from './googleCalendarOAuth';
 import { hasEmailConfig, sendBookingConfirmation } from './email';
@@ -240,9 +241,16 @@ app.post('/api/bookings', async (req, res) => {
   try {
     const isAvailable = await checkAvailability(startDate.toISOString(), endDate.toISOString());
     if (!isAvailable) {
+      const suggestions = await getSuggestedTimes(startDate.toISOString(), endDate.toISOString());
+
       return res.status(409).json({
         error: 'The requested time slot is no longer available. Please choose another time.',
-        errorCode: 'TIME_SLOT_UNAVAILABLE'
+        errorCode: 'TIME_SLOT_UNAVAILABLE',
+        suggestedTimes: suggestions.map(s => ({
+          date: s,
+          dayName: new Date(s).toLocaleDateString('en-US', { weekday: 'long' }),
+          timeRange: new Date(s).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        }))
       });
     }
   } catch (error) {

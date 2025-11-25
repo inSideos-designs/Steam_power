@@ -249,13 +249,55 @@ export const checkAvailability = async (
 
     return !hasConflict;
   } catch (error) {
-    console.error(
-      '[calendar] Error checking availability:',
-      error instanceof Error ? error.message : error
-    );
+    console.error('[calendar] Error checking availability for:', { startTime, endTime });
+    console.error('[calendar] Full error:', error);
+    if (error instanceof Error) {
+      console.error('[calendar] Error message:', error.message);
+      console.error('[calendar] Error stack:', error.stack);
+    }
     // Fail safe: if we can't check, assume it might be unsafe or let it pass? 
     // Usually better to fail safe and say not available or error out.
     // For now, let's throw so the caller handles it.
     throw error;
   }
+};
+
+export const getSuggestedTimes = async (
+  originalStart: string,
+  originalEnd: string
+): Promise<string[]> => {
+  const suggestions: string[] = [];
+  const start = new Date(originalStart);
+  const end = new Date(originalEnd);
+  const durationMs = end.getTime() - start.getTime();
+
+  // Candidates to check: +1h, +2h, +3h, +24h (next day same time)
+  const offsets = [
+    60 * 60 * 1000,       // +1 hour
+    2 * 60 * 60 * 1000,   // +2 hours
+    3 * 60 * 60 * 1000,   // +3 hours
+    24 * 60 * 60 * 1000,  // +24 hours
+  ];
+
+  for (const offset of offsets) {
+    if (suggestions.length >= 3) break;
+
+    const nextStart = new Date(start.getTime() + offset);
+    const nextEnd = new Date(nextStart.getTime() + durationMs);
+
+    try {
+      const isAvailable = await checkAvailability(
+        nextStart.toISOString(),
+        nextEnd.toISOString()
+      );
+
+      if (isAvailable) {
+        suggestions.push(nextStart.toISOString());
+      }
+    } catch (error) {
+      console.warn('[calendar] Failed to check suggestion availability:', error);
+    }
+  }
+
+  return suggestions;
 };

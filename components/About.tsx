@@ -10,7 +10,7 @@ const About: React.FC = () => {
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 drop-shadow-md">Committed to healthier homes and storefronts</h2>
             <p className="text-gray-300 mb-4 text-lg leading-relaxed">
               Steam Power started as a one-van operation determined to bring pro-grade cleanliness to local families.
-              Today, we pair eco-friendly chemistry with commercial steam technology to lift allergens, stains, and build-up across the Bay Area.
+              Today, we pair eco-friendly chemistry with commercial steam technology to lift allergens, stains, and build-up across the Middlesex area.
             </p>
             <p className="text-gray-400 leading-relaxed">
               This section is a placeholder for your personal story: highlight certifications, years of experience, or the moment you decided to launch

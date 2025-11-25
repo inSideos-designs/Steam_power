@@ -188,7 +188,7 @@ export const SERVICES: Service[] = [
     price: '$35.00',
     priceCents: 3500,
     durationMinutes: 25,
-    imageUrl: '/services/new-pictures/Ottoman.jpg',
+    imageUrl: '/services/new-pictures/ottoman-cleaning.png',
     category: 'indoor',
     serviceType: 'upholstery',
   },
@@ -301,12 +301,12 @@ export const SERVICES: Service[] = [
   // Outdoor – Power Washing & Exterior Services
   {
     id: 'powerwash-house',
-    title: 'House Wash (Vinyl/Aluminum/Wood/Brick/Stucco)',
-    description: 'Soft-wash or power-wash tailored to your siding material. Quote provided after inspection.',
+    title: 'House Soft Wash',
+    description: 'Safe and effective cleaning for Vinyl, Aluminum, Wood, Brick, and Stucco. Quote provided after inspection.',
     price: 'Estimate Required',
     priceCents: null,
     durationMinutes: 180,
-    imageUrl: '/services/new-pictures/garage-floor-degrease-power-wash.jpg',
+    imageUrl: '/services/new-pictures/house-wash-exterior.png',
     category: 'outdoor',
     serviceType: 'powerwash',
   },
@@ -328,7 +328,7 @@ export const SERVICES: Service[] = [
     price: 'Starting at $120.00',
     priceCents: 12000,
     durationMinutes: 120,
-    imageUrl: '/services/new-pictures/concrete-surface-cleaning.jpg',
+    imageUrl: '/services/new-pictures/garage-floor-cleaning.png',
     category: 'outdoor',
     serviceType: 'powerwash',
   },
@@ -411,17 +411,7 @@ export const SERVICES: Service[] = [
     category: 'outdoor',
     serviceType: 'roofing',
   },
-  {
-    id: 'gutter-guard',
-    title: 'Gutter Guard Installation',
-    description: 'Prevents debris buildup with protective mesh or screen covers. Keeps gutters flowing freely year-round.',
-    price: 'Estimate Required',
-    priceCents: null,
-    durationMinutes: 240,
-    imageUrl: '/services/new-pictures/gutter-guard-install.jpg',
-    category: 'outdoor',
-    serviceType: 'roofing',
-  },
+
 
   // Automotive, Boat & RV Detailing
   {

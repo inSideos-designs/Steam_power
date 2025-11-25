@@ -87,31 +87,78 @@
     }
 
     .steam-container {
-      position: relative;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
       overflow: hidden;
     }
 
-    .steam-particle {
+    .fog-container {
       position: absolute;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
-      border-radius: 50%;
-      animation: steam 4s infinite;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1;
       pointer-events: none;
     }
 
-    @keyframes steam {
-      0% {
-        transform: translateY(0) scale(1);
-        opacity: 0.8;
-      }
+    .fog-img {
+      position: absolute;
+      height: 100vh;
+      width: 300vw;
+      z-index: 1;
+      opacity: 0.6;
+      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
+      filter: blur(60px);
+      animation: fog 60s linear infinite;
+    }
 
-      50% {
-        transform: translateY(-20px) scale(1.1);
-        opacity: 0.4;
+    .fog-img-2 {
+      z-index: 2;
+      animation-duration: 40s;
+      opacity: 0.4;
+      background: radial-gradient(ellipse at center, rgba(173, 232, 244, 0.3) 0%, rgba(255, 255, 255, 0) 60%);
+      filter: blur(40px);
+      animation-direction: reverse;
+    }
+
+    @keyframes fog {
+      0% {
+        transform: translate3d(-200vw, 0, 0);
       }
 
       100% {
-        transform: translateY(-40px) scale(1.2);
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .steam-vent {
+      position: absolute;
+      bottom: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+      filter: blur(30px);
+      opacity: 0;
+      animation: rise 4s infinite;
+    }
+
+    @keyframes rise {
+      0% {
+        transform: translateX(-50%) translateY(0) scale(1);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateX(-50%) translateY(-300px) scale(2);
         opacity: 0;
       }
     }

@@ -213,3 +213,49 @@ export const createCalendarBooking = async (
     throw error;
   }
 };
+
+export const checkAvailability = async (
+  startTime: string,
+  endTime: string
+): Promise<boolean> => {
+  try {
+    const { calendar, calendarId } = await getCalendarClient();
+
+    const response = await calendar.events.list({
+      calendarId,
+      timeMin: startTime,
+      timeMax: endTime,
+      singleEvents: true,
+      orderBy: 'startTime',
+    });
+
+    const events = response.data.items || [];
+
+    // If there are any events in this time range, it's not available
+    // Note: Google Calendar's timeMin is inclusive, timeMax is exclusive for the query range usually,
+    // but we should double check overlaps manually to be safe if needed.
+    // However, for a basic check, if 'items' is not empty, there is an overlap.
+    // Let's refine the check to ensure true overlap (StartA < EndB) and (EndA > StartB)
+
+    const requestedStart = new Date(startTime).getTime();
+    const requestedEnd = new Date(endTime).getTime();
+
+    const hasConflict = events.some(event => {
+      const eventStart = new Date(event.start?.dateTime || event.start?.date || '').getTime();
+      const eventEnd = new Date(event.end?.dateTime || event.end?.date || '').getTime();
+
+      return (requestedStart < eventEnd && requestedEnd > eventStart);
+    });
+
+    return !hasConflict;
+  } catch (error) {
+    console.error(
+      '[calendar] Error checking availability:',
+      error instanceof Error ? error.message : error
+    );
+    // Fail safe: if we can't check, assume it might be unsafe or let it pass? 
+    // Usually better to fail safe and say not available or error out.
+    // For now, let's throw so the caller handles it.
+    throw error;
+  }
+};

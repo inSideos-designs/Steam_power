@@ -8,6 +8,7 @@ import { calculateCartTotals, resolveCartItems } from './services';
 import {
   hasGoogleCalendarConfig,
   createCalendarBooking,
+  checkAvailability,
 } from './googleCalendar';
 import { listUpcomingEvents, getAvailableSlots, isTimeSlotAvailable } from './googleCalendarOAuth';
 import { hasEmailConfig, sendBookingConfirmation } from './email';
@@ -235,9 +236,21 @@ app.post('/api/bookings', async (req, res) => {
     });
   }
 
-  // Double bookings are allowed, so we skip the conflict check.
-  // const hasConflict = await checkCalendarConflicts(startDate.toISOString(), endDate.toISOString());
-  // if (hasConflict) { ... }
+  // Check for calendar conflicts
+  try {
+    const isAvailable = await checkAvailability(startDate.toISOString(), endDate.toISOString());
+    if (!isAvailable) {
+      return res.status(409).json({
+        error: 'The requested time slot is no longer available. Please choose another time.',
+        errorCode: 'TIME_SLOT_UNAVAILABLE'
+      });
+    }
+  } catch (error) {
+    console.error('[booking] Failed to check availability:', error);
+    // Decide if we want to block booking on error. 
+    // For safety, let's block it if we can't verify availability.
+    return res.status(500).json({ error: 'Unable to verify availability. Please try again later.' });
+  }
 
   try {
     const serviceSummaryLines = cartItems.map(

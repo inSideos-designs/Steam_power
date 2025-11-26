@@ -50,6 +50,18 @@ export const SERVICES: Service[] = [
     category: 'indoor',
     serviceType: 'carpet',
   },
+  {
+    id: 'carpet-stairs',
+    title: 'Stairs Cleaning',
+    sizeLabel: '9-12 steps',
+    description: 'Deep cleaning for carpeted stairs to remove traffic marks and soil. Includes pre-treatment and steam extraction.',
+    price: '$50.00',
+    priceCents: 5000,
+    durationMinutes: 45,
+    imageUrl: '/services/new-pictures/small-room-carpet.png',
+    category: 'indoor',
+    serviceType: 'carpet',
+  },
 
   // Indoor – Area Rug Cleaning
   {

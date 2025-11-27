@@ -18,6 +18,8 @@ import {
   suggestAlternativeTimes,
   formatSuggestedTimes,
 } from './availability';
+import { hasDatabaseConfig, initializeDatabase } from './database.js';
+import customersRouter, { findOrCreateCustomer, saveBooking } from './customers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,8 +39,20 @@ if (!hasEmailConfig()) {
   console.warn('[email] SMTP configuration is missing — booking confirmations will not be sent.');
 }
 
+if (!hasDatabaseConfig()) {
+  console.warn('[database] DATABASE_URL not configured — customer tracking features will be disabled.');
+} else {
+  // Initialize database schema on startup
+  initializeDatabase().catch((err) => {
+    console.error('[database] Failed to initialize:', err);
+  });
+}
+
 app.use(cors());
 app.use(express.json());
+
+// Customer management routes
+app.use('/api/customers', customersRouter);
 
 const distPath = path.resolve(__dirname, '../dist');
 app.use(express.static(distPath));
@@ -292,6 +306,36 @@ app.post('/api/bookings', async (req, res) => {
         totalPriceCents,
       },
     });
+
+    // Save customer and booking to database (non-blocking)
+    let customerId: string | undefined;
+    try {
+      const customer = await findOrCreateCustomer({
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone,
+      });
+
+      if (customer) {
+        customerId = customer.id;
+        await saveBooking({
+          customerId: customer.id,
+          googleEventId: event.id || '',
+          scheduledAt: startDate,
+          totalCents: totalPriceCents,
+          notes,
+          items: cartItems.map((item) => ({
+            serviceId: item.service.id,
+            serviceTitle: item.service.title,
+            quantity: item.quantity,
+            priceCents: item.service.priceCents ?? 0,
+          })),
+        });
+      }
+    } catch (dbError) {
+      // Log but don't fail the booking if database save fails
+      console.error('[database] Failed to save booking:', dbError);
+    }
 
     let emailSent = false;
     try {

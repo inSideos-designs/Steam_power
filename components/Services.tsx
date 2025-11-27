@@ -9,6 +9,8 @@ import {
   type AvailableTimeSlot,
   type BookedSlot,
 } from './timeSlotCalculator';
+import CustomerLookup, { type CustomerData, type SavedRoom } from './CustomerLookup';
+import RoomConfig, { type RoomConfiguration } from './RoomConfig';
 
 type CartLineItem = {
   service: Service;
@@ -337,6 +339,13 @@ const Services: React.FC = () => {
   const [travelTimeMinutes, setTravelTimeMinutes] = React.useState(0);
   const [isLoadingTimes, setIsLoadingTimes] = React.useState(false);
 
+  // Customer tracking state
+  const [bookingStep, setBookingStep] = React.useState<'lookup' | 'rooms' | 'services' | 'checkout'>('lookup');
+  const [currentCustomer, setCurrentCustomer] = React.useState<CustomerData | null>(null);
+  const [isReturningCustomer, setIsReturningCustomer] = React.useState(false);
+  const [roomConfigurations, setRoomConfigurations] = React.useState<RoomConfiguration[]>([]);
+  const [selectedRoomIds, setSelectedRoomIds] = React.useState<Set<string>>(new Set());
+
   const availableServiceTypes = React.useMemo(() => {
     const categories = SERVICES.filter((service) => service.category === selectedCategory);
     const set = new Set<ServiceFocus>();
@@ -526,6 +535,93 @@ const Services: React.FC = () => {
     setCartItems((prev) => prev.filter((item) => item.service.id !== serviceId));
   };
 
+  // Customer flow handlers
+  const handleCustomerFound = (customer: CustomerData) => {
+    setCurrentCustomer(customer);
+    setIsReturningCustomer(true);
+
+    // Pre-fill customer info
+    setCustomerName(customer.name);
+    if (customer.email) setCustomerEmail(customer.email);
+    if (customer.phone) setCustomerPhone(customer.phone);
+
+    // Load saved address
+    const defaultAddress = customer.addresses.find(a => a.is_default) || customer.addresses[0];
+    if (defaultAddress?.street) {
+      const addressParts = [defaultAddress.street, defaultAddress.city, defaultAddress.state, defaultAddress.zip].filter(Boolean);
+      setCustomerAddress(addressParts.join(', '));
+    }
+
+    // Load saved rooms as configurations
+    if (customer.rooms.length > 0) {
+      const loadedRooms: RoomConfiguration[] = customer.rooms.map(room => ({
+        id: `saved-${room.id}`,
+        surfaceType: room.surface_type as 'carpet' | 'tile' | 'hardwood',
+        roomName: room.room_name || '',
+        squareFeet: room.square_feet,
+        isFromDatabase: true,
+        databaseId: room.id,
+      }));
+      setRoomConfigurations(loadedRooms);
+      // Pre-select all rooms
+      setSelectedRoomIds(new Set(loadedRooms.map(r => r.id)));
+    }
+
+    setBookingStep('rooms');
+  };
+
+  const handleNewCustomer = () => {
+    setIsReturningCustomer(false);
+    setCurrentCustomer(null);
+    setBookingStep('rooms');
+  };
+
+  const handleSkipLookup = () => {
+    setIsReturningCustomer(false);
+    setCurrentCustomer(null);
+    setBookingStep('services');
+  };
+
+  const handleRoomsComplete = () => {
+    setBookingStep('services');
+  };
+
+  const handleSaveRooms = async (rooms: RoomConfiguration[]) => {
+    if (!currentCustomer) return;
+
+    // Save new rooms to database
+    for (const room of rooms) {
+      if (!room.isFromDatabase) {
+        try {
+          const response = await fetch(`/api/customers/${currentCustomer.id}/rooms`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              surface_type: room.surfaceType,
+              room_name: room.roomName || null,
+              square_feet: room.squareFeet,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Mark as saved
+            room.isFromDatabase = true;
+            room.databaseId = data.room.id;
+          }
+        } catch (error) {
+          console.error('[rooms] Failed to save room:', error);
+        }
+      }
+    }
+
+    setRoomConfigurations([...rooms]);
+  };
+
+  const handleBackToLookup = () => {
+    setBookingStep('lookup');
+  };
+
   const totalPriceCents = cartItems.reduce((sum, line) => {
     const price = line.service.priceCents ?? 0;
     return sum + price * line.quantity;
@@ -628,6 +724,135 @@ const Services: React.FC = () => {
         </div>
 
         <div className="glass-panel rounded-3xl shadow-2xl p-6 md:p-10 space-y-10">
+          {/* Customer Lookup Step */}
+          {bookingStep === 'lookup' && (
+            <div className="space-y-6">
+              <div className="flex items-baseline justify-between flex-wrap gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">Getting Started</p>
+                  <h3 className="text-2xl font-bold text-white">Let's check if we know you</h3>
+                </div>
+                <p className="text-sm text-gray-300 max-w-md">
+                  Returning customers enjoy faster booking with saved room sizes and preferences.
+                </p>
+              </div>
+              <CustomerLookup
+                onCustomerFound={handleCustomerFound}
+                onNewCustomer={handleNewCustomer}
+                onSkip={handleSkipLookup}
+              />
+            </div>
+          )}
+
+          {/* Room Configuration Step */}
+          {bookingStep === 'rooms' && (
+            <div className="space-y-6">
+              <div className="flex items-baseline justify-between flex-wrap gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">
+                    {isReturningCustomer ? 'Welcome Back' : 'Room Setup'}
+                  </p>
+                  <h3 className="text-2xl font-bold text-white">
+                    {isReturningCustomer ? 'Select rooms to clean' : 'Tell us about your rooms'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleBackToLookup}
+                  className="text-sm text-brand-cyan hover:underline"
+                >
+                  &larr; Back
+                </button>
+              </div>
+
+              {isReturningCustomer && roomConfigurations.length > 0 ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-400">
+                    Select the rooms you'd like cleaned today, or add new ones.
+                  </p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {roomConfigurations.map((room) => (
+                      <button
+                        key={room.id}
+                        type="button"
+                        onClick={() => {
+                          const newSelected = new Set(selectedRoomIds);
+                          if (newSelected.has(room.id)) {
+                            newSelected.delete(room.id);
+                          } else {
+                            newSelected.add(room.id);
+                          }
+                          setSelectedRoomIds(newSelected);
+                        }}
+                        className={`p-4 rounded-xl border text-left transition-all ${
+                          selectedRoomIds.has(room.id)
+                            ? 'border-brand-cyan bg-brand-cyan/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/30'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-white font-medium">
+                              {room.roomName || `${room.surfaceType} room`}
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              {room.surfaceType} &bull; {room.squareFeet} sq ft
+                            </p>
+                          </div>
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            selectedRoomIds.has(room.id)
+                              ? 'border-brand-cyan bg-brand-cyan'
+                              : 'border-white/30'
+                          }`}>
+                            {selectedRoomIds.has(room.id) && (
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRoomConfigurations([...roomConfigurations, {
+                        id: `new-${Date.now()}`,
+                        surfaceType: 'carpet',
+                        roomName: '',
+                        squareFeet: 200,
+                      }]);
+                    }}
+                    className="w-full py-3 border border-dashed border-white/20 rounded-lg text-gray-400 hover:text-white hover:border-brand-cyan"
+                  >
+                    + Add a new room
+                  </button>
+                </div>
+              ) : (
+                <RoomConfig
+                  rooms={roomConfigurations}
+                  onRoomsChange={setRoomConfigurations}
+                  onSaveRooms={currentCustomer ? handleSaveRooms : undefined}
+                  isReturningCustomer={isReturningCustomer}
+                />
+              )}
+
+              <div className="flex justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={handleRoomsComplete}
+                  className="px-8 py-3 bg-brand-cyan text-brand-dark font-semibold rounded-lg hover:bg-brand-blue transition-colors"
+                >
+                  Continue to Services &rarr;
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Service Selection Steps (existing flow) */}
+          {(bookingStep === 'services' || bookingStep === 'checkout') && (
+          <>
           <div className="space-y-6">
             <div className="flex items-baseline justify-between flex-wrap gap-4">
               <div>
@@ -1197,6 +1422,8 @@ const Services: React.FC = () => {
               </form>
             </aside>
           </div>
+          </>
+          )}
         </div>
       </div>
     </section>

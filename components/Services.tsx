@@ -583,6 +583,51 @@ const Services: React.FC = () => {
   };
 
   const handleRoomsComplete = () => {
+    // Convert selected rooms to cart items
+    const roomsToAdd = isReturningCustomer
+      ? roomConfigurations.filter(r => selectedRoomIds.has(r.id))
+      : roomConfigurations;
+
+    // Map each room to a service based on surface type and square feet
+    const newCartItems: CartLineItem[] = [];
+
+    for (const room of roomsToAdd) {
+      // Calculate price based on square feet (similar to area rug pricing)
+      const pricePerSqFt = room.surfaceType === 'carpet' ? 0.30
+        : room.surfaceType === 'tile' ? 0.35
+        : 0.40; // hardwood
+
+      const priceCents = Math.round(room.squareFeet * pricePerSqFt * 100);
+      const durationMinutes = Math.max(30, Math.round(room.squareFeet / 5)); // ~5 sq ft per minute
+
+      // Create a custom service for this room
+      const customService: Service = {
+        id: `room-${room.id}-${Date.now()}`,
+        title: room.roomName
+          ? `${room.roomName} (${room.surfaceType.charAt(0).toUpperCase() + room.surfaceType.slice(1)})`
+          : `${room.surfaceType.charAt(0).toUpperCase() + room.surfaceType.slice(1)} Room`,
+        description: `${room.squareFeet} sq ft ${room.surfaceType} cleaning`,
+        price: formatCurrency(priceCents),
+        priceCents,
+        durationMinutes,
+        imageUrl: room.surfaceType === 'carpet'
+          ? '/services/new-pictures/medium-room-carpet-cleaning.jpg'
+          : room.surfaceType === 'tile'
+          ? '/services/new-pictures/x-small-room-tile-cleaning.jpg'
+          : '/services/new-pictures/medium-room-carpet-cleaning.jpg',
+        category: 'indoor',
+        serviceType: room.surfaceType === 'tile' ? 'tile' : 'carpet',
+        sizeLabel: `${room.squareFeet} sq ft @ $${pricePerSqFt.toFixed(2)}/sq ft`,
+      };
+
+      newCartItems.push({ service: customService, quantity: 1 });
+    }
+
+    // Add room services to cart
+    if (newCartItems.length > 0) {
+      setCartItems(prev => [...prev, ...newCartItems]);
+    }
+
     setBookingStep('services');
   };
 

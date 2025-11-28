@@ -594,11 +594,13 @@ const Services: React.FC = () => {
     for (const room of roomsToAdd) {
       // Calculate price based on square feet (similar to area rug pricing)
       const pricePerSqFt = room.surfaceType === 'carpet' ? 0.30
-        : room.surfaceType === 'tile' ? 0.35
+        : room.surfaceType === 'tile' ? 0.40
         : 0.40; // hardwood
 
-      const priceCents = Math.round(room.squareFeet * pricePerSqFt * 100);
-      const durationMinutes = Math.max(30, Math.round(room.squareFeet / 5)); // ~5 sq ft per minute
+      // Handle estimate pending rooms
+      const isEstimatePending = room.estimatePending === true;
+      const priceCents = isEstimatePending ? null : Math.round(room.squareFeet * pricePerSqFt * 100);
+      const durationMinutes = isEstimatePending ? 60 : Math.max(30, Math.round(room.squareFeet / 5)); // ~5 sq ft per minute
 
       // Create a custom service for this room
       const customService: Service = {
@@ -606,8 +608,10 @@ const Services: React.FC = () => {
         title: room.roomName
           ? `${room.roomName} (${room.surfaceType.charAt(0).toUpperCase() + room.surfaceType.slice(1)})`
           : `${room.surfaceType.charAt(0).toUpperCase() + room.surfaceType.slice(1)} Room`,
-        description: `${room.squareFeet} sq ft ${room.surfaceType} cleaning`,
-        price: formatCurrency(priceCents),
+        description: isEstimatePending
+          ? `${room.surfaceType} cleaning - size to be measured on-site`
+          : `${room.squareFeet} sq ft ${room.surfaceType} cleaning`,
+        price: isEstimatePending ? 'Estimate Pending' : formatCurrency(priceCents!),
         priceCents,
         durationMinutes,
         imageUrl: room.surfaceType === 'carpet'
@@ -617,7 +621,7 @@ const Services: React.FC = () => {
           : '/services/new-pictures/medium-room-carpet-cleaning.jpg',
         category: 'indoor',
         serviceType: room.surfaceType === 'tile' ? 'tile' : 'carpet',
-        sizeLabel: `${room.squareFeet} sq ft @ $${pricePerSqFt.toFixed(2)}/sq ft`,
+        sizeLabel: isEstimatePending ? 'Size pending measurement' : `${room.squareFeet} sq ft @ $${pricePerSqFt.toFixed(2)}/sq ft`,
       };
 
       newCartItems.push({ service: customService, quantity: 1 });

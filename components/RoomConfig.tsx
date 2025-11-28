@@ -5,6 +5,7 @@ export interface RoomConfiguration {
   surfaceType: 'carpet' | 'tile' | 'hardwood';
   roomName: string;
   squareFeet: number;
+  estimatePending?: boolean;
   isFromDatabase?: boolean;
   databaseId?: string;
 }
@@ -18,7 +19,7 @@ interface RoomConfigProps {
 
 const SURFACE_TYPES = [
   { value: 'carpet', label: 'Carpet', pricePerSqFt: 0.30, color: 'bg-blue-500' },
-  { value: 'tile', label: 'Tile', pricePerSqFt: 0.35, color: 'bg-amber-500' },
+  { value: 'tile', label: 'Tile', pricePerSqFt: 0.40, color: 'bg-amber-500' },
   { value: 'hardwood', label: 'Hardwood', pricePerSqFt: 0.40, color: 'bg-orange-700' },
 ] as const;
 
@@ -27,6 +28,7 @@ const SIZE_PRESETS = [
   { label: 'M', value: 250, description: 'Medium (250 sq ft)' },
   { label: 'L', value: 400, description: 'Large (400 sq ft)' },
   { label: 'XL', value: 600, description: 'Extra Large (600 sq ft)' },
+  { label: '?', value: 0, description: 'Estimate Pending', isEstimatePending: true },
 ];
 
 const formatCurrency = (cents: number) =>
@@ -43,7 +45,22 @@ const RoomConfigSlider: React.FC<{
   onRemove: () => void;
 }> = ({ room, index, onUpdate, onRemove }) => {
   const surfaceInfo = SURFACE_TYPES.find(s => s.value === room.surfaceType) || SURFACE_TYPES[0];
-  const estimatedPrice = Math.round(room.squareFeet * surfaceInfo.pricePerSqFt * 100);
+  const estimatedPrice = room.estimatePending ? 0 : Math.round(room.squareFeet * surfaceInfo.pricePerSqFt * 100);
+
+  const handlePresetClick = (preset: typeof SIZE_PRESETS[number]) => {
+    if ('isEstimatePending' in preset && preset.isEstimatePending) {
+      onUpdate({ ...room, squareFeet: 0, estimatePending: true });
+    } else {
+      onUpdate({ ...room, squareFeet: preset.value, estimatePending: false });
+    }
+  };
+
+  const isPresetSelected = (preset: typeof SIZE_PRESETS[number]) => {
+    if ('isEstimatePending' in preset && preset.isEstimatePending) {
+      return room.estimatePending === true;
+    }
+    return !room.estimatePending && room.squareFeet === preset.value;
+  };
 
   return (
     <div className="border border-white/10 rounded-xl p-4 bg-white/5 space-y-4">
@@ -77,12 +94,15 @@ const RoomConfigSlider: React.FC<{
       <div className="flex gap-2">
         {SIZE_PRESETS.map((preset) => (
           <button
-            key={preset.value}
+            key={preset.label}
             type="button"
-            onClick={() => onUpdate({ ...room, squareFeet: preset.value })}
+            onClick={() => handlePresetClick(preset)}
+            title={preset.description}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              room.squareFeet === preset.value
-                ? 'bg-brand-cyan text-brand-dark'
+              isPresetSelected(preset)
+                ? 'isEstimatePending' in preset && preset.isEstimatePending
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-brand-cyan text-brand-dark'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
@@ -91,31 +111,44 @@ const RoomConfigSlider: React.FC<{
         ))}
       </div>
 
-      {/* Custom Slider */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-400">Custom size</span>
-          <span className="text-white font-medium">{room.squareFeet} sq ft</span>
+      {/* Custom Slider - Hidden when estimate pending */}
+      {!room.estimatePending && (
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">Custom size</span>
+            <span className="text-white font-medium">{room.squareFeet} sq ft</span>
+          </div>
+          <input
+            type="range"
+            min={50}
+            max={800}
+            step={10}
+            value={room.squareFeet}
+            onChange={(e) => onUpdate({ ...room, squareFeet: Number(e.target.value), estimatePending: false })}
+            className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
+          />
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>50 sq ft</span>
+            <span>800 sq ft</span>
+          </div>
         </div>
-        <input
-          type="range"
-          min={50}
-          max={800}
-          step={10}
-          value={room.squareFeet}
-          onChange={(e) => onUpdate({ ...room, squareFeet: Number(e.target.value) })}
-          className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>50 sq ft</span>
-          <span>800 sq ft</span>
+      )}
+
+      {/* Estimate Pending Message */}
+      {room.estimatePending && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+          <p className="text-sm text-amber-400">
+            We'll measure and provide an exact quote on-site
+          </p>
         </div>
-      </div>
+      )}
 
       {/* Estimated Price */}
       <div className="flex justify-between items-center pt-2 border-t border-white/10">
         <span className="text-sm text-gray-400">Estimated price</span>
-        <span className="text-brand-cyan font-semibold">{formatCurrency(estimatedPrice)}</span>
+        <span className={`font-semibold ${room.estimatePending ? 'text-amber-400' : 'text-brand-cyan'}`}>
+          {room.estimatePending ? 'Estimate Pending' : formatCurrency(estimatedPrice)}
+        </span>
       </div>
     </div>
   );
@@ -219,12 +252,15 @@ const RoomConfig: React.FC<RoomConfigProps> = ({
 
   const totalEstimate = React.useMemo(() => {
     return rooms.reduce((total, room) => {
+      if (room.estimatePending) return total;
       const surfaceInfo = SURFACE_TYPES.find(s => s.value === room.surfaceType) || SURFACE_TYPES[0];
       return total + Math.round(room.squareFeet * surfaceInfo.pricePerSqFt * 100);
     }, 0);
   }, [rooms]);
 
-  const totalSquareFeet = rooms.reduce((sum, r) => sum + r.squareFeet, 0);
+  const hasEstimatePending = rooms.some(r => r.estimatePending);
+  const totalSquareFeet = rooms.filter(r => !r.estimatePending).reduce((sum, r) => sum + r.squareFeet, 0);
+  const pendingRoomsCount = rooms.filter(r => r.estimatePending).length;
 
   return (
     <div className="space-y-6">
@@ -327,14 +363,25 @@ const RoomConfig: React.FC<RoomConfigProps> = ({
           <div className="bg-brand-cyan/10 rounded-xl p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-300">Total area</span>
-              <span className="text-white font-medium">{totalSquareFeet.toLocaleString()} sq ft</span>
+              <span className="text-white font-medium">
+                {totalSquareFeet > 0 ? `${totalSquareFeet.toLocaleString()} sq ft` : '—'}
+                {pendingRoomsCount > 0 && ` + ${pendingRoomsCount} pending`}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-300">Estimated total</span>
-              <span className="text-brand-cyan font-semibold text-lg">{formatCurrency(totalEstimate)}</span>
+              <span className={`font-semibold text-lg ${hasEstimatePending ? 'text-amber-400' : 'text-brand-cyan'}`}>
+                {hasEstimatePending
+                  ? totalEstimate > 0
+                    ? `${formatCurrency(totalEstimate)} + pending`
+                    : 'Estimate Pending'
+                  : formatCurrency(totalEstimate)}
+              </span>
             </div>
             <p className="text-xs text-gray-500 pt-2 border-t border-white/10">
-              Final price confirmed after on-site inspection
+              {hasEstimatePending
+                ? 'Rooms marked pending will be measured on-site for accurate pricing'
+                : 'Final price confirmed after on-site inspection'}
             </p>
           </div>
 

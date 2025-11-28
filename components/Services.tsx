@@ -995,6 +995,8 @@ const Services: React.FC = () => {
                           <img
                             src={service.imageUrl}
                             alt={service.title}
+                            loading="lazy"
+                            decoding="async"
                             onError={(event) => {
                               if (event.currentTarget.dataset.fallback === 'true') {
                                 return;

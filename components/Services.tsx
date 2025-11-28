@@ -331,6 +331,62 @@ const Services: React.FC = () => {
     return { squareFeet: carpetSquareFeet, priceCents, priceFormatted: formatCurrency(priceCents), pricePerSqFt };
   }, [carpetSquareFeet, carpetEstimatePending]);
 
+  // Tile cleaning square footage
+  const [tileSquareFeet, setTileSquareFeet] = React.useState<number>(150);
+  const [tileEstimatePending, setTileEstimatePending] = React.useState<boolean>(false);
+
+  const tilePricing = React.useMemo(() => {
+    if (tileEstimatePending) {
+      return { squareFeet: 0, priceCents: 0, priceFormatted: 'Estimate Pending', pricePerSqFt: 0.40 };
+    }
+    const pricePerSqFt = 0.40;
+    const priceCents = Math.round(tileSquareFeet * pricePerSqFt * 100);
+    return { squareFeet: tileSquareFeet, priceCents, priceFormatted: formatCurrency(priceCents), pricePerSqFt };
+  }, [tileSquareFeet, tileEstimatePending]);
+
+  // Window cleaning square footage
+  const [windowSquareFeet, setWindowSquareFeet] = React.useState<number>(15);
+  const [windowEstimatePending, setWindowEstimatePending] = React.useState<boolean>(false);
+
+  const windowPricing = React.useMemo(() => {
+    if (windowEstimatePending) {
+      return { squareFeet: 0, priceCents: 0, priceFormatted: 'Estimate Pending', pricePerSqFt: 1.00 };
+    }
+    const pricePerSqFt = 1.00;
+    const priceCents = Math.round(windowSquareFeet * pricePerSqFt * 100);
+    return { squareFeet: windowSquareFeet, priceCents, priceFormatted: formatCurrency(priceCents), pricePerSqFt };
+  }, [windowSquareFeet, windowEstimatePending]);
+
+  // Boat detailing length and type
+  const [boatLength, setBoatLength] = React.useState<number>(20);
+  const [boatDetailType, setBoatDetailType] = React.useState<'interior' | 'exterior' | 'full'>('full');
+  const [boatEstimatePending, setBoatEstimatePending] = React.useState<boolean>(false);
+
+  const boatPricing = React.useMemo(() => {
+    if (boatEstimatePending || boatLength > 40) {
+      return { length: boatLength, priceCents: 0, priceFormatted: 'Estimate Pending', pricePerFt: 5.00 };
+    }
+    const pricePerFt = 5.00;
+    const multiplier = boatDetailType === 'full' ? 1.6 : boatDetailType === 'interior' ? 1.0 : 0.9;
+    const priceCents = Math.round(boatLength * pricePerFt * multiplier * 100);
+    return { length: boatLength, priceCents, priceFormatted: formatCurrency(priceCents), pricePerFt };
+  }, [boatLength, boatDetailType, boatEstimatePending]);
+
+  // RV detailing length and type
+  const [rvLength, setRvLength] = React.useState<number>(25);
+  const [rvDetailType, setRvDetailType] = React.useState<'interior' | 'exterior' | 'full'>('full');
+  const [rvEstimatePending, setRvEstimatePending] = React.useState<boolean>(false);
+
+  const rvPricing = React.useMemo(() => {
+    if (rvEstimatePending) {
+      return { length: rvLength, priceCents: 0, priceFormatted: 'Estimate Pending', pricePerFt: 6.00 };
+    }
+    const pricePerFt = 6.00;
+    const multiplier = rvDetailType === 'full' ? 1.5 : rvDetailType === 'interior' ? 1.1 : 1.0;
+    const priceCents = Math.round(rvLength * pricePerFt * multiplier * 100);
+    return { length: rvLength, priceCents, priceFormatted: formatCurrency(priceCents), pricePerFt };
+  }, [rvLength, rvDetailType, rvEstimatePending]);
+
   // Deodorizing powder scent selection
   const DEODORIZER_SCENTS = ['Black Ice', 'Mahogany Teakwood', 'Blue Lava', 'Seasonal Blend'] as const;
   const [selectedScent, setSelectedScent] = React.useState<string>(DEODORIZER_SCENTS[0]);
@@ -544,6 +600,89 @@ const Services: React.FC = () => {
     setCartItems((prev) => [...prev, { service: customService, quantity }]);
 
     // Clear the submission states
+    setSubmissionError(null);
+    setConfirmation(null);
+  };
+
+  const handleAddTileToCart = (service: Service) => {
+    const quantity = quantities[service.id] ?? 1;
+    const uniqueId = `${service.id}-${tileSquareFeet}sqft-${Date.now()}`;
+    const durationMinutes = tileEstimatePending ? 60 : Math.max(40, Math.round(tileSquareFeet / 4));
+
+    const customService: Service = {
+      ...service,
+      id: uniqueId,
+      price: tilePricing.priceFormatted,
+      priceCents: tileEstimatePending ? null : tilePricing.priceCents,
+      title: tileEstimatePending ? 'Tile & Grout Cleaning (Estimate Pending)' : `Tile & Grout Cleaning (${tileSquareFeet} sq ft)`,
+      sizeLabel: tileEstimatePending ? 'Size pending measurement' : `${tileSquareFeet} sq ft @ $${tilePricing.pricePerSqFt}/sq ft`,
+      durationMinutes,
+    };
+
+    setCartItems((prev) => [...prev, { service: customService, quantity }]);
+    setSubmissionError(null);
+    setConfirmation(null);
+  };
+
+  const handleAddWindowToCart = (service: Service) => {
+    const quantity = quantities[service.id] ?? 1;
+    const uniqueId = `${service.id}-${windowSquareFeet}sqft-${Date.now()}`;
+    const durationMinutes = windowEstimatePending ? 15 : Math.max(8, Math.round(windowSquareFeet * 0.7));
+
+    const customService: Service = {
+      ...service,
+      id: uniqueId,
+      price: windowPricing.priceFormatted,
+      priceCents: windowEstimatePending ? null : windowPricing.priceCents,
+      title: windowEstimatePending ? 'Window Cleaning (Estimate Pending)' : `Window Cleaning (${windowSquareFeet} sq ft)`,
+      sizeLabel: windowEstimatePending ? 'Size pending measurement' : `${windowSquareFeet} sq ft @ $${windowPricing.pricePerSqFt}/sq ft`,
+      durationMinutes,
+    };
+
+    setCartItems((prev) => [...prev, { service: customService, quantity }]);
+    setSubmissionError(null);
+    setConfirmation(null);
+  };
+
+  const handleAddBoatToCart = (service: Service) => {
+    const quantity = quantities[service.id] ?? 1;
+    const uniqueId = `${service.id}-${boatLength}ft-${boatDetailType}-${Date.now()}`;
+    const isEstimate = boatEstimatePending || boatLength > 40;
+    const durationMinutes = isEstimate ? 180 : Math.max(120, boatLength * 6);
+    const detailTypeLabel = boatDetailType.charAt(0).toUpperCase() + boatDetailType.slice(1);
+
+    const customService: Service = {
+      ...service,
+      id: uniqueId,
+      price: boatPricing.priceFormatted,
+      priceCents: isEstimate ? null : boatPricing.priceCents,
+      title: isEstimate ? `Boat ${detailTypeLabel} Detail (Estimate Pending)` : `Boat ${detailTypeLabel} Detail (${boatLength} ft)`,
+      sizeLabel: isEstimate ? 'Size pending measurement' : `${boatLength} ft ${detailTypeLabel.toLowerCase()} @ $${boatPricing.pricePerFt}/ft`,
+      durationMinutes,
+    };
+
+    setCartItems((prev) => [...prev, { service: customService, quantity }]);
+    setSubmissionError(null);
+    setConfirmation(null);
+  };
+
+  const handleAddRvToCart = (service: Service) => {
+    const quantity = quantities[service.id] ?? 1;
+    const uniqueId = `${service.id}-${rvLength}ft-${rvDetailType}-${Date.now()}`;
+    const durationMinutes = rvEstimatePending ? 240 : Math.max(150, rvLength * 7);
+    const detailTypeLabel = rvDetailType.charAt(0).toUpperCase() + rvDetailType.slice(1);
+
+    const customService: Service = {
+      ...service,
+      id: uniqueId,
+      price: rvPricing.priceFormatted,
+      priceCents: rvEstimatePending ? null : rvPricing.priceCents,
+      title: rvEstimatePending ? `RV ${detailTypeLabel} Detail (Estimate Pending)` : `RV ${detailTypeLabel} Detail (${rvLength} ft)`,
+      sizeLabel: rvEstimatePending ? 'Size pending measurement' : `${rvLength} ft ${detailTypeLabel.toLowerCase()} @ $${rvPricing.pricePerFt}/ft`,
+      durationMinutes,
+    };
+
+    setCartItems((prev) => [...prev, { service: customService, quantity }]);
     setSubmissionError(null);
     setConfirmation(null);
   };
@@ -1021,6 +1160,10 @@ const Services: React.FC = () => {
                       const isAreaRugOffSite = service.id === 'area-rug-offsite';
                       const isAreaRug = isAreaRugOnSite || isAreaRugOffSite;
                       const isCarpetCleaning = service.id === 'carpet-cleaning';
+                      const isTileCleaning = service.id === 'tile-cleaning';
+                      const isWindowCleaning = service.id === 'window-cleaning';
+                      const isBoatDetail = service.id === 'boat-detail';
+                      const isRvDetail = service.id === 'rv-detail';
                       const isDeodorizer = service.id === 'deodorizer-powder';
 
                       // Get appropriate dimensions and pricing
@@ -1205,6 +1348,194 @@ const Services: React.FC = () => {
                               </div>
                             )}
 
+                            {/* Tile Cleaning Sizing */}
+                            {isTileCleaning && (
+                              <div className="space-y-4 border-t border-white/10 pt-4">
+                                <div className="flex gap-2">
+                                  {[
+                                    { label: 'S', value: 100 },
+                                    { label: 'M', value: 200 },
+                                    { label: 'L', value: 350 },
+                                    { label: '?', value: 0, isPending: true },
+                                  ].map((preset) => (
+                                    <button
+                                      key={preset.label}
+                                      type="button"
+                                      onClick={() => {
+                                        if (preset.isPending) {
+                                          setTileEstimatePending(true);
+                                        } else {
+                                          setTileEstimatePending(false);
+                                          setTileSquareFeet(preset.value);
+                                        }
+                                      }}
+                                      title={preset.isPending ? 'Estimate Pending' : `${preset.value} sq ft`}
+                                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                        preset.isPending
+                                          ? tileEstimatePending
+                                            ? 'bg-amber-500 text-white'
+                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                          : !tileEstimatePending && tileSquareFeet === preset.value
+                                            ? 'bg-brand-cyan text-brand-dark'
+                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                      }`}
+                                    >
+                                      {preset.label}
+                                    </button>
+                                  ))}
+                                </div>
+                                {!tileEstimatePending && (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <label className="text-sm font-medium text-white">Area: {tileSquareFeet} sq ft</label>
+                                      <span className="text-xs text-gray-500">Max 600 sq ft</span>
+                                    </div>
+                                    <input type="range" min={50} max={600} step={10} value={tileSquareFeet}
+                                      onChange={(e) => setTileSquareFeet(Number(e.target.value))}
+                                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan" />
+                                  </div>
+                                )}
+                                {tileEstimatePending && (
+                                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                                    <p className="text-sm text-amber-400">We'll measure and provide an exact quote on-site</p>
+                                  </div>
+                                )}
+                                <div className="bg-brand-cyan/10 rounded-lg p-3">
+                                  <p className="text-xs text-gray-400">Rate: <span className="font-semibold text-white">$0.40 per sq ft</span></p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Window Cleaning Sizing */}
+                            {isWindowCleaning && (
+                              <div className="space-y-4 border-t border-white/10 pt-4">
+                                <div className="flex gap-2">
+                                  {[
+                                    { label: 'S', value: 9, desc: '3×3 ft' },
+                                    { label: 'M', value: 15, desc: '3×5 ft' },
+                                    { label: 'L', value: 35, desc: '5×7 ft' },
+                                    { label: 'XL', value: 50, desc: '7+ ft' },
+                                    { label: '?', value: 0, isPending: true },
+                                  ].map((preset) => (
+                                    <button
+                                      key={preset.label}
+                                      type="button"
+                                      onClick={() => {
+                                        if (preset.isPending) {
+                                          setWindowEstimatePending(true);
+                                        } else {
+                                          setWindowEstimatePending(false);
+                                          setWindowSquareFeet(preset.value);
+                                        }
+                                      }}
+                                      title={preset.isPending ? 'Estimate Pending' : preset.desc}
+                                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                        preset.isPending
+                                          ? windowEstimatePending
+                                            ? 'bg-amber-500 text-white'
+                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                          : !windowEstimatePending && windowSquareFeet === preset.value
+                                            ? 'bg-brand-cyan text-brand-dark'
+                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                      }`}
+                                    >
+                                      {preset.label}
+                                    </button>
+                                  ))}
+                                </div>
+                                {!windowEstimatePending && (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <label className="text-sm font-medium text-white">Window Size: {windowSquareFeet} sq ft</label>
+                                      <span className="text-xs text-gray-500">Per window</span>
+                                    </div>
+                                    <input type="range" min={4} max={60} step={1} value={windowSquareFeet}
+                                      onChange={(e) => setWindowSquareFeet(Number(e.target.value))}
+                                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan" />
+                                  </div>
+                                )}
+                                {windowEstimatePending && (
+                                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                                    <p className="text-sm text-amber-400">We'll measure and provide an exact quote on-site</p>
+                                  </div>
+                                )}
+                                <div className="bg-brand-cyan/10 rounded-lg p-3">
+                                  <p className="text-xs text-gray-400">Rate: <span className="font-semibold text-white">$1.00 per sq ft</span></p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Boat Detailing */}
+                            {isBoatDetail && (
+                              <div className="space-y-4 border-t border-white/10 pt-4">
+                                <div className="flex gap-2">
+                                  {(['interior', 'exterior', 'full'] as const).map((type) => (
+                                    <button key={type} type="button" onClick={() => setBoatDetailType(type)}
+                                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                        boatDetailType === type ? 'bg-brand-cyan text-brand-dark' : 'bg-white/10 text-white hover:bg-white/20'
+                                      }`}>
+                                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                                    </button>
+                                  ))}
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <label className="text-sm font-medium text-white">Length: {boatLength} ft</label>
+                                    <span className="text-xs text-gray-500">{boatLength > 40 ? 'Estimate required' : 'Max 40 ft'}</span>
+                                  </div>
+                                  <input type="range" min={15} max={45} step={1} value={boatLength}
+                                    onChange={(e) => setBoatLength(Number(e.target.value))}
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan" />
+                                </div>
+                                <div className="bg-brand-cyan/10 rounded-lg p-3">
+                                  <p className="text-xs text-gray-400">Rate: <span className="font-semibold text-white">~$5.00 per ft</span></p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* RV Detailing */}
+                            {isRvDetail && (
+                              <div className="space-y-4 border-t border-white/10 pt-4">
+                                <div className="flex gap-2">
+                                  {(['interior', 'exterior', 'full'] as const).map((type) => (
+                                    <button key={type} type="button" onClick={() => setRvDetailType(type)}
+                                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                        rvDetailType === type ? 'bg-brand-cyan text-brand-dark' : 'bg-white/10 text-white hover:bg-white/20'
+                                      }`}>
+                                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                                    </button>
+                                  ))}
+                                </div>
+                                <div className="flex gap-2 mt-2">
+                                  <button type="button" onClick={() => setRvEstimatePending(!rvEstimatePending)}
+                                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                      rvEstimatePending ? 'bg-amber-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'
+                                    }`}>
+                                    ? Estimate Pending
+                                  </button>
+                                </div>
+                                {!rvEstimatePending && (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <label className="text-sm font-medium text-white">Length: {rvLength} ft</label>
+                                      <span className="text-xs text-gray-500">Max 45 ft</span>
+                                    </div>
+                                    <input type="range" min={18} max={45} step={1} value={rvLength}
+                                      onChange={(e) => setRvLength(Number(e.target.value))}
+                                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan" />
+                                  </div>
+                                )}
+                                {rvEstimatePending && (
+                                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                                    <p className="text-sm text-amber-400">We'll measure and provide an exact quote on-site</p>
+                                  </div>
+                                )}
+                                <div className="bg-brand-cyan/10 rounded-lg p-3">
+                                  <p className="text-xs text-gray-400">Rate: <span className="font-semibold text-white">~$6.00 per ft</span></p>
+                                </div>
+                              </div>
+                            )}
+
                             {/* Deodorizer Scent Selection */}
                             {isDeodorizer && (
                               <div className="space-y-3 border-t border-gray-100 pt-4">
@@ -1232,10 +1563,30 @@ const Services: React.FC = () => {
 
                             <div className="space-y-3">
                               <div className="flex items-center justify-between">
-                                <span className={`text-xl font-semibold ${(isCarpetCleaning && carpetEstimatePending) ? 'text-amber-400' : 'text-brand-cyan'}`}>
-                                  {isAreaRug ? rugPricing.priceFormatted : isCarpetCleaning ? carpetPricing.priceFormatted : service.price}
+                                <span className={`text-xl font-semibold ${
+                                  (isCarpetCleaning && carpetEstimatePending) ||
+                                  (isTileCleaning && tileEstimatePending) ||
+                                  (isWindowCleaning && windowEstimatePending) ||
+                                  (isBoatDetail && (boatEstimatePending || boatLength > 40)) ||
+                                  (isRvDetail && rvEstimatePending)
+                                    ? 'text-amber-400' : 'text-brand-cyan'
+                                }`}>
+                                  {isAreaRug ? rugPricing.priceFormatted
+                                    : isCarpetCleaning ? carpetPricing.priceFormatted
+                                    : isTileCleaning ? tilePricing.priceFormatted
+                                    : isWindowCleaning ? windowPricing.priceFormatted
+                                    : isBoatDetail ? boatPricing.priceFormatted
+                                    : isRvDetail ? rvPricing.priceFormatted
+                                    : service.price}
                                 </span>
-                                <span className="text-sm text-gray-500">{formatDuration(isCarpetCleaning && !carpetEstimatePending ? Math.max(30, Math.round(carpetSquareFeet / 5)) : service.durationMinutes)}</span>
+                                <span className="text-sm text-gray-500">{formatDuration(
+                                  isCarpetCleaning && !carpetEstimatePending ? Math.max(30, Math.round(carpetSquareFeet / 5))
+                                  : isTileCleaning && !tileEstimatePending ? Math.max(40, Math.round(tileSquareFeet / 4))
+                                  : isWindowCleaning && !windowEstimatePending ? Math.max(8, Math.round(windowSquareFeet * 0.7))
+                                  : isBoatDetail ? Math.max(120, boatLength * 6)
+                                  : isRvDetail && !rvEstimatePending ? Math.max(150, rvLength * 7)
+                                  : service.durationMinutes
+                                )}</span>
                               </div>
                               <div className="flex items-center gap-4">
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
@@ -1256,6 +1607,14 @@ const Services: React.FC = () => {
                                       handleAddRugToCart(service, isAreaRugOffSite);
                                     } else if (isCarpetCleaning) {
                                       handleAddCarpetToCart(service);
+                                    } else if (isTileCleaning) {
+                                      handleAddTileToCart(service);
+                                    } else if (isWindowCleaning) {
+                                      handleAddWindowToCart(service);
+                                    } else if (isBoatDetail) {
+                                      handleAddBoatToCart(service);
+                                    } else if (isRvDetail) {
+                                      handleAddRvToCart(service);
                                     } else if (isDeodorizer) {
                                       handleAddDeodzizerToCart(service);
                                     } else {

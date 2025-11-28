@@ -318,6 +318,19 @@ const Services: React.FC = () => {
     [rugOffsiteLength, rugOffsiteWidth, calculateRugPrice]
   );
 
+  // Carpet cleaning square footage
+  const [carpetSquareFeet, setCarpetSquareFeet] = React.useState<number>(200);
+  const [carpetEstimatePending, setCarpetEstimatePending] = React.useState<boolean>(false);
+
+  const carpetPricing = React.useMemo(() => {
+    if (carpetEstimatePending) {
+      return { squareFeet: 0, priceCents: 0, priceFormatted: 'Estimate Pending', pricePerSqFt: 0.30 };
+    }
+    const pricePerSqFt = 0.30;
+    const priceCents = Math.round(carpetSquareFeet * pricePerSqFt * 100);
+    return { squareFeet: carpetSquareFeet, priceCents, priceFormatted: formatCurrency(priceCents), pricePerSqFt };
+  }, [carpetSquareFeet, carpetEstimatePending]);
+
   // Deodorizing powder scent selection
   const DEODORIZER_SCENTS = ['Black Ice', 'Mahogany Teakwood', 'Blue Lava', 'Seasonal Blend'] as const;
   const [selectedScent, setSelectedScent] = React.useState<string>(DEODORIZER_SCENTS[0]);
@@ -500,6 +513,34 @@ const Services: React.FC = () => {
     };
 
     // Always add as a new item (don't update existing) to allow multiple rugs
+    setCartItems((prev) => [...prev, { service: customService, quantity }]);
+
+    // Clear the submission states
+    setSubmissionError(null);
+    setConfirmation(null);
+  };
+
+  const handleAddCarpetToCart = (service: Service) => {
+    const quantity = quantities[service.id] ?? 1;
+
+    // Create a unique ID for each carpet configuration
+    const uniqueId = `${service.id}-${carpetSquareFeet}sqft-${Date.now()}`;
+
+    // Calculate duration based on square footage (~5 sq ft per minute)
+    const durationMinutes = carpetEstimatePending ? 60 : Math.max(30, Math.round(carpetSquareFeet / 5));
+
+    // Create a custom service object with calculated pricing
+    const customService: Service = {
+      ...service,
+      id: uniqueId,
+      price: carpetPricing.priceFormatted,
+      priceCents: carpetEstimatePending ? null : carpetPricing.priceCents,
+      title: carpetEstimatePending ? 'Carpet Cleaning (Estimate Pending)' : `Carpet Cleaning (${carpetSquareFeet} sq ft)`,
+      sizeLabel: carpetEstimatePending ? 'Size pending measurement' : `${carpetSquareFeet} sq ft @ $${carpetPricing.pricePerSqFt}/sq ft`,
+      durationMinutes,
+    };
+
+    // Always add as a new item to allow multiple rooms
     setCartItems((prev) => [...prev, { service: customService, quantity }]);
 
     // Clear the submission states
@@ -979,6 +1020,7 @@ const Services: React.FC = () => {
                       const isAreaRugOnSite = service.id === 'area-rug-onsite';
                       const isAreaRugOffSite = service.id === 'area-rug-offsite';
                       const isAreaRug = isAreaRugOnSite || isAreaRugOffSite;
+                      const isCarpetCleaning = service.id === 'carpet-cleaning';
                       const isDeodorizer = service.id === 'deodorizer-powder';
 
                       // Get appropriate dimensions and pricing
@@ -1080,6 +1122,89 @@ const Services: React.FC = () => {
                               </div>
                             )}
 
+                            {/* Carpet Cleaning Sizing */}
+                            {isCarpetCleaning && (
+                              <div className="space-y-4 border-t border-white/10 pt-4">
+                                {/* Size Presets */}
+                                <div className="flex gap-2">
+                                  {[
+                                    { label: 'S', value: 100 },
+                                    { label: 'M', value: 200 },
+                                    { label: 'L', value: 350 },
+                                    { label: 'XL', value: 500 },
+                                    { label: '?', value: 0, isPending: true },
+                                  ].map((preset) => (
+                                    <button
+                                      key={preset.label}
+                                      type="button"
+                                      onClick={() => {
+                                        if (preset.isPending) {
+                                          setCarpetEstimatePending(true);
+                                        } else {
+                                          setCarpetEstimatePending(false);
+                                          setCarpetSquareFeet(preset.value);
+                                        }
+                                      }}
+                                      title={preset.isPending ? 'Estimate Pending' : `${preset.value} sq ft`}
+                                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                        preset.isPending
+                                          ? carpetEstimatePending
+                                            ? 'bg-amber-500 text-white'
+                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                          : !carpetEstimatePending && carpetSquareFeet === preset.value
+                                            ? 'bg-brand-cyan text-brand-dark'
+                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                      }`}
+                                    >
+                                      {preset.label}
+                                    </button>
+                                  ))}
+                                </div>
+
+                                {/* Custom Slider */}
+                                {!carpetEstimatePending && (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <label className="text-sm font-medium text-white">
+                                        Room Size: {carpetSquareFeet} sq ft
+                                      </label>
+                                      <span className="text-xs text-gray-500">Max 800 sq ft</span>
+                                    </div>
+                                    <input
+                                      type="range"
+                                      min={50}
+                                      max={800}
+                                      step={10}
+                                      value={carpetSquareFeet}
+                                      onChange={(e) => setCarpetSquareFeet(Number(e.target.value))}
+                                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Estimate Pending Message */}
+                                {carpetEstimatePending && (
+                                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                                    <p className="text-sm text-amber-400">
+                                      We'll measure and provide an exact quote on-site
+                                    </p>
+                                  </div>
+                                )}
+
+                                {/* Pricing Summary */}
+                                <div className="bg-brand-cyan/10 rounded-lg p-3 space-y-1">
+                                  <p className="text-xs text-gray-400">
+                                    Rate: <span className="font-semibold text-white">$0.30 per sq ft</span>
+                                  </p>
+                                  {!carpetEstimatePending && (
+                                    <p className="text-xs text-gray-400">
+                                      Area: <span className="font-semibold text-white">{carpetSquareFeet} sq ft</span>
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
                             {/* Deodorizer Scent Selection */}
                             {isDeodorizer && (
                               <div className="space-y-3 border-t border-gray-100 pt-4">
@@ -1107,10 +1232,10 @@ const Services: React.FC = () => {
 
                             <div className="space-y-3">
                               <div className="flex items-center justify-between">
-                                <span className="text-xl font-semibold text-brand-cyan">
-                                  {isAreaRug ? rugPricing.priceFormatted : service.price}
+                                <span className={`text-xl font-semibold ${(isCarpetCleaning && carpetEstimatePending) ? 'text-amber-400' : 'text-brand-cyan'}`}>
+                                  {isAreaRug ? rugPricing.priceFormatted : isCarpetCleaning ? carpetPricing.priceFormatted : service.price}
                                 </span>
-                                <span className="text-sm text-gray-500">{formatDuration(service.durationMinutes)}</span>
+                                <span className="text-sm text-gray-500">{formatDuration(isCarpetCleaning && !carpetEstimatePending ? Math.max(30, Math.round(carpetSquareFeet / 5)) : service.durationMinutes)}</span>
                               </div>
                               <div className="flex items-center gap-4">
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
@@ -1129,6 +1254,8 @@ const Services: React.FC = () => {
                                   onClick={() => {
                                     if (isAreaRug) {
                                       handleAddRugToCart(service, isAreaRugOffSite);
+                                    } else if (isCarpetCleaning) {
+                                      handleAddCarpetToCart(service);
                                     } else if (isDeodorizer) {
                                       handleAddDeodzizerToCart(service);
                                     } else {

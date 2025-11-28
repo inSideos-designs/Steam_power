@@ -595,7 +595,7 @@ const Services: React.FC = () => {
       // Calculate price based on square feet (similar to area rug pricing)
       const pricePerSqFt = room.surfaceType === 'carpet' ? 0.30
         : room.surfaceType === 'tile' ? 0.40
-        : 0.40; // hardwood
+          : 0.40; // hardwood
 
       // Handle estimate pending rooms
       const isEstimatePending = room.estimatePending === true;
@@ -617,8 +617,8 @@ const Services: React.FC = () => {
         imageUrl: room.surfaceType === 'carpet'
           ? '/services/new-pictures/medium-room-carpet-cleaning.jpg'
           : room.surfaceType === 'tile'
-          ? '/services/new-pictures/x-small-room-tile-cleaning.jpg'
-          : '/services/new-pictures/medium-room-carpet-cleaning.jpg',
+            ? '/services/new-pictures/x-small-room-tile-cleaning.jpg'
+            : '/services/new-pictures/medium-room-carpet-cleaning.jpg',
         category: 'indoor',
         serviceType: room.surfaceType === 'tile' ? 'tile' : 'carpet',
         sizeLabel: isEstimatePending ? 'Size pending measurement' : `${room.squareFeet} sq ft @ $${pricePerSqFt.toFixed(2)}/sq ft`,
@@ -833,11 +833,10 @@ const Services: React.FC = () => {
                           }
                           setSelectedRoomIds(newSelected);
                         }}
-                        className={`p-4 rounded-xl border text-left transition-all ${
-                          selectedRoomIds.has(room.id)
+                        className={`p-4 rounded-xl border text-left transition-all ${selectedRoomIds.has(room.id)
                             ? 'border-brand-cyan bg-brand-cyan/10'
                             : 'border-white/10 bg-white/5 hover:border-white/30'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
@@ -848,11 +847,10 @@ const Services: React.FC = () => {
                               {room.surfaceType} &bull; {room.squareFeet} sq ft
                             </p>
                           </div>
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            selectedRoomIds.has(room.id)
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedRoomIds.has(room.id)
                               ? 'border-brand-cyan bg-brand-cyan'
                               : 'border-white/30'
-                          }`}>
+                            }`}>
                             {selectedRoomIds.has(room.id) && (
                               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -901,577 +899,577 @@ const Services: React.FC = () => {
 
           {/* Service Selection Steps (existing flow) */}
           {(bookingStep === 'services' || bookingStep === 'checkout') && (
-          <>
-          <div className="space-y-6">
-            <div className="flex items-baseline justify-between flex-wrap gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">Step 1</p>
-                <h3 className="text-2xl font-bold text-white">Select a service category</h3>
-              </div>
-              <p className="text-sm text-gray-300 max-w-md">Switch between categories to see specially curated services. Prices shown include equipment, products, and travel.</p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {CATEGORY_ORDER.map((category) => {
-                const detail = CATEGORY_DETAILS[category];
-                const isActive = selectedCategory === category;
-                return (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => setSelectedCategory(category)}
-                    className={`text-left rounded-2xl border transition-all p-5 h-full relative overflow-hidden group ${isActive
-                      ? 'bg-gradient-to-br from-brand-dark to-brand-blue border-brand-cyan shadow-lg text-white'
-                      : 'border-white/10 hover:border-brand-cyan/60 hover:shadow-md bg-white/5 hover:bg-white/10'
-                      }`}
-                    aria-pressed={isActive}
-                  >
-                    <div className={`absolute inset-0 bg-brand-cyan/10 transform transition-transform duration-500 ${isActive ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'}`}></div>
-                    <div className="relative z-10">
-                      <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${isActive ? 'text-brand-cyan' : 'text-brand-cyan/70'}`}>{detail.lead}</p>
-                      <p className={`text-xl font-bold mb-2 ${isActive ? 'text-white' : 'text-gray-200'}`}>{detail.label}</p>
-                      <p className={`text-sm leading-relaxed ${isActive ? 'text-gray-200' : 'text-gray-400'}`}>{detail.description}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-baseline justify-between flex-wrap gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">Step 2</p>
-                <h3 className="text-2xl font-bold text-white">Pick the focus area</h3>
-              </div>
-              <p className="text-sm text-gray-300 max-w-md">
-                Toggle between carpet, tile, upholstery, or window offerings tailored to your selected category.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {availableServiceTypes.map((focus) => {
-                const detail = SERVICE_TYPE_DETAILS[focus];
-                const isActive = selectedFocus === focus;
-                return (
-                  <button
-                    key={focus}
-                    type="button"
-                    onClick={() => setSelectedFocus(focus)}
-                    className={`px-4 py-2 rounded-full border text-sm font-semibold transition-colors ${isActive
-                      ? 'bg-brand-cyan text-white border-brand-cyan shadow-md'
-                      : 'border-white/10 text-gray-300 hover:border-brand-cyan hover:text-brand-cyan hover:bg-white/5'
-                      }`}
-                    aria-pressed={isActive}
-                  >
-                    {detail.label}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-sm text-gray-400">{SERVICE_TYPE_DETAILS[selectedFocus]?.description}</p>
-          </div>
-
-          <div className="grid gap-8 xl:grid-cols-[1.6fr_1fr]">
-            <div className="space-y-6">
-              <h4 className="text-lg font-semibold text-white">Service options</h4>
-              <div className="grid gap-6 md:grid-cols-2">
-                {servicesForSelection.map((service) => {
-                  const quantity = quantities[service.id] ?? 1;
-                  const cartLine = cartItems.find((line) => line.service.id === service.id);
-                  const subtotalCents = (service.priceCents ?? 0) * (cartLine?.quantity ?? 0);
-                  const isAreaRugOnSite = service.id === 'area-rug-onsite';
-                  const isAreaRugOffSite = service.id === 'area-rug-offsite';
-                  const isAreaRug = isAreaRugOnSite || isAreaRugOffSite;
-                  const isDeodorizer = service.id === 'deodorizer-powder';
-
-                  // Get appropriate dimensions and pricing
-                  const rugLength = isAreaRugOffSite ? rugOffsiteLength : rugOnsiteLength;
-                  const rugWidth = isAreaRugOffSite ? rugOffsiteWidth : rugOnsiteWidth;
-                  const rugPricing = isAreaRugOffSite ? rugOffsitePricing : rugOnsitePricing;
-                  const maxDimension = isAreaRugOffSite ? 12 : 25;
-
-                  return (
-                    <div
-                      key={service.id}
-                      className="rounded-2xl border border-white/10 bg-white/5 shadow-lg hover:bg-white/10 transition-all flex flex-col backdrop-blur-sm"
-                    >
-                      <img
-                        src={service.imageUrl}
-                        alt={service.title}
-                        onError={(event) => {
-                          if (event.currentTarget.dataset.fallback === 'true') {
-                            return;
-                          }
-                          event.currentTarget.dataset.fallback = 'true';
-                          event.currentTarget.src = '/steam-power-hero2.jpg';
-                        }}
-                        className="w-full h-44 object-cover rounded-t-2xl"
-                      />
-                      <div className="p-5 flex flex-col gap-4 flex-grow">
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">
-                            {SERVICE_TYPE_DETAILS[service.serviceType].label}
-                          </p>
-                          <h5 className="text-lg font-bold text-white">{service.title}</h5>
-                          {service.sizeLabel && !isAreaRug && (
-                            <p className="text-sm text-brand-cyan font-semibold">{service.sizeLabel}</p>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-300 leading-relaxed flex-grow">{service.description}</p>
-
-                        {/* Custom Area Rug Sizing */}
-                        {isAreaRug && (
-                          <div className="space-y-4 border-t border-gray-100 pt-4">
-                            <div className="space-y-3">
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <label className="text-sm font-medium text-brand-dark">
-                                    Length: {rugLength} ft
-                                  </label>
-                                  <span className="text-xs text-gray-500">Max {maxDimension} ft</span>
-                                </div>
-                                <input
-                                  type="range"
-                                  min={1}
-                                  max={maxDimension}
-                                  value={rugLength}
-                                  onChange={(e) => {
-                                    const val = Number(e.target.value);
-                                    if (isAreaRugOffSite) {
-                                      setRugOffsiteLength(val);
-                                    } else {
-                                      setRugOnsiteLength(val);
-                                    }
-                                  }}
-                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <label className="text-sm font-medium text-brand-dark">
-                                    Width: {rugWidth} ft
-                                  </label>
-                                  <span className="text-xs text-gray-500">Max {maxDimension} ft</span>
-                                </div>
-                                <input
-                                  type="range"
-                                  min={1}
-                                  max={maxDimension}
-                                  value={rugWidth}
-                                  onChange={(e) => {
-                                    const val = Number(e.target.value);
-                                    if (isAreaRugOffSite) {
-                                      setRugOffsiteWidth(val);
-                                    } else {
-                                      setRugOnsiteWidth(val);
-                                    }
-                                  }}
-                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
-                                />
-                              </div>
-                            </div>
-                            <div className="bg-brand-cyan/10 rounded-lg p-3 space-y-1">
-                              <p className="text-xs text-gray-600">
-                                Area: <span className="font-semibold text-brand-dark">{rugPricing.squareFeet} sq ft</span>
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                Rate: <span className="font-semibold text-brand-dark">${rugPricing.pricePerSqFt} per sq ft</span>
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Deodorizer Scent Selection */}
-                        {isDeodorizer && (
-                          <div className="space-y-3 border-t border-gray-100 pt-4">
-                            <label className="text-sm font-medium text-brand-dark">
-                              Select Scent
-                            </label>
-                            <select
-                              value={selectedScent}
-                              onChange={(e) => setSelectedScent(e.target.value)}
-                              className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white"
-                            >
-                              {DEODORIZER_SCENTS.map((scent) => (
-                                <option key={scent} value={scent}>
-                                  {scent}
-                                </option>
-                              ))}
-                            </select>
-                            <div className="bg-brand-cyan/10 rounded-lg p-3">
-                              <p className="text-xs text-gray-600">
-                                Selected: <span className="font-semibold text-brand-dark">{selectedScent}</span>
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xl font-semibold text-brand-cyan">
-                              {isAreaRug ? rugPricing.priceFormatted : service.price}
-                            </span>
-                            <span className="text-sm text-gray-500">{formatDuration(service.durationMinutes)}</span>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
-                              Qty
-                              <input
-                                type="number"
-                                min={1}
-                                max={10}
-                                value={quantity}
-                                onChange={(event) => handleQuantityChange(service.id, event.target.value)}
-                                className="w-16 border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (isAreaRug) {
-                                  handleAddRugToCart(service, isAreaRugOffSite);
-                                } else if (isDeodorizer) {
-                                  handleAddDeodzizerToCart(service);
-                                } else {
-                                  handleAddToCart(service);
-                                }
-                              }}
-                              className="ml-auto inline-flex items-center justify-center px-4 py-2 rounded-full bg-brand-cyan text-white text-sm font-semibold hover:bg-brand-blue transition-colors"
-                            >
-                              Add to Cart
-                            </button>
-                          </div>
-                          {cartLine && (
-                            <p className="text-xs text-gray-500">
-                              In cart • {cartLine.quantity} × {cartLine.service.price} ={' '}
-                              {cartLine.service.priceCents
-                                ? formatCurrency(subtotalCents)
-                                : 'Estimate pending'}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                {servicesForSelection.length === 0 && (
-                  <div className="col-span-full text-center text-gray-500 border border-dashed border-gray-300 rounded-2xl p-8">
-                    <p className="font-semibold text-brand-dark">More services coming soon</p>
-                    <p className="text-sm mt-2">We are expanding offerings for this focus area. Pick another category or contact us for a custom quote.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <aside className="space-y-6">
-              <div className="rounded-2xl border border-white/10 bg-white/5 shadow-lg p-5 space-y-4 backdrop-blur-sm">
-                <div className="flex items-baseline justify-between">
+            <>
+              <div className="space-y-6">
+                <div className="flex items-baseline justify-between flex-wrap gap-4">
                   <div>
-                    <h4 className="text-lg font-semibold text-white">Cart summary</h4>
-                    <p className="text-xs uppercase tracking-widest text-brand-cyan">Step 3</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">Step 1</p>
+                    <h3 className="text-2xl font-bold text-white">Select a service category</h3>
                   </div>
-                  <span className="text-sm text-gray-400">
-                    {cartItems.length} item{cartItems.length === 1 ? '' : 's'}
-                  </span>
+                  <p className="text-sm text-gray-300 max-w-md">Switch between categories to see specially curated services. Prices shown include equipment, products, and travel.</p>
                 </div>
-                <div className="space-y-4">
-                  {cartItems.length === 0 && <p className="text-sm text-gray-400">Add at least one service to start your booking.</p>}
-                  {cartItems.map((line) => {
-                    const hasUnitPrice = typeof line.service.priceCents === 'number' && line.service.priceCents > 0;
-                    const lineSubtotal = (line.service.priceCents ?? 0) * line.quantity;
-                    const lineTotalLabel = hasUnitPrice ? formatCurrency(lineSubtotal) : 'Estimate pending';
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  {CATEGORY_ORDER.map((category) => {
+                    const detail = CATEGORY_DETAILS[category];
+                    const isActive = selectedCategory === category;
                     return (
-                      <div key={line.service.id} className="rounded-xl border border-white/10 p-4 space-y-3 bg-white/5">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="text-sm font-semibold text-white">{line.service.title}</p>
-                            {line.service.sizeLabel && (
-                              <p className="text-xs text-brand-cyan">{line.service.sizeLabel}</p>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeFromCart(line.service.id)}
-                            className="text-xs font-semibold text-brand-cyan hover:text-brand-blue"
-                          >
-                            Remove
-                          </button>
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => setSelectedCategory(category)}
+                        className={`text-left rounded-2xl border transition-all p-5 h-full relative overflow-hidden group ${isActive
+                          ? 'bg-gradient-to-br from-brand-dark to-brand-blue border-brand-cyan shadow-lg text-white'
+                          : 'border-white/10 hover:border-brand-cyan/60 hover:shadow-md bg-white/5 hover:bg-white/10'
+                          }`}
+                        aria-pressed={isActive}
+                      >
+                        <div className={`absolute inset-0 bg-brand-cyan/10 transform transition-transform duration-500 ${isActive ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'}`}></div>
+                        <div className="relative z-10">
+                          <p className={`text-xs font-semibold uppercase tracking-widest mb-2 ${isActive ? 'text-brand-cyan' : 'text-brand-cyan/70'}`}>{detail.lead}</p>
+                          <p className={`text-xl font-bold mb-2 ${isActive ? 'text-white' : 'text-gray-200'}`}>{detail.label}</p>
+                          <p className={`text-sm leading-relaxed ${isActive ? 'text-gray-200' : 'text-gray-400'}`}>{detail.description}</p>
                         </div>
-                        <div className="flex items-center justify-between text-sm text-gray-300">
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => incrementCartItem(line.service, -1)}
-                              className="w-7 h-7 inline-flex items-center justify-center rounded-full border border-white/20 hover:border-brand-cyan text-white"
-                              aria-label={`Reduce quantity for ${line.service.title}`}
-                            >
-                              −
-                            </button>
-                            <span className="font-semibold text-white">{line.quantity}</span>
-                            <button
-                              type="button"
-                              onClick={() => incrementCartItem(line.service, 1)}
-                              className="w-7 h-7 inline-flex items-center justify-center rounded-full border border-white/20 hover:border-brand-cyan text-white"
-                              aria-label={`Increase quantity for ${line.service.title}`}
-                            >
-                              +
-                            </button>
-                          </div>
-                          <span className="font-semibold text-brand-cyan">{lineTotalLabel}</span>
-                        </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
-                <div className="border-t border-white/10 pt-4 space-y-2 text-sm">
-                  <div className="flex justify-between text-white font-semibold">
-                    <span>Estimated total</span>
-                    <span>{totalPriceCents > 0 ? formatCurrency(totalPriceCents) : 'Estimate pending'}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-400">
-                    <span>Service time</span>
-                    <span>{totalDurationMinutes ? formatDuration(totalDurationMinutes) : 'TBD'}</span>
-                  </div>
-                  <p className="text-xs text-gray-500">Final charges occur after the service is completed and verified on-site.</p>
-                </div>
               </div>
 
-              <form className="rounded-2xl border border-white/10 bg-white/5 shadow-lg p-5 space-y-4 backdrop-blur-sm">
-                <div className="flex items-baseline justify-between">
-                  <h4 className="text-lg font-semibold text-white">Reserve your time</h4>
-                  <p className="text-xs uppercase tracking-widest text-brand-cyan">Step 4</p>
-                </div>
-                <div className="grid gap-4">
-                  <label className="text-sm font-medium text-gray-200 space-y-1">
-                    Name
-                    <input
-                      type="text"
-                      value={customerName}
-                      onChange={(event) => {
-                        setCustomerName(event.target.value);
-                        setSubmissionError(null);
-                        setConfirmation(null);
-                      }}
-                      placeholder="How should we address you?"
-                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
-                    />
-                  </label>
-                  <label className="text-sm font-medium text-gray-200 space-y-1">
-                    Email
-                    <input
-                      type="email"
-                      value={customerEmail}
-                      onChange={(event) => {
-                        setCustomerEmail(event.target.value);
-                        setSubmissionError(null);
-                        setConfirmation(null);
-                      }}
-                      placeholder="we'll send confirmation here"
-                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
-                    />
-                  </label>
-                  <label className="text-sm font-medium text-gray-200 space-y-1">
-                    Phone (optional)
-                    <input
-                      type="tel"
-                      value={customerPhone}
-                      onChange={(event) => {
-                        setCustomerPhone(event.target.value);
-                        setSubmissionError(null);
-                        setConfirmation(null);
-                      }}
-                      placeholder="Helpful for day-of updates"
-                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
-                    />
-                  </label>
-                  <label className="text-sm font-medium text-gray-200 space-y-1">
-                    Service Address
-                    <input
-                      type="text"
-                      value={customerAddress}
-                      onChange={(event) => {
-                        setCustomerAddress(event.target.value);
-                        setSubmissionError(null);
-                        setConfirmation(null);
-                      }}
-                      placeholder="Street address for service"
-                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
-                    />
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label className="text-sm font-medium text-gray-200 space-y-1">
-                      Preferred date
-                      <select
-                        value={serviceDate}
-                        onChange={(event) => {
-                          setServiceDate(event.target.value);
-                          setSubmissionError(null);
-                          setSuggestedTimes([]);
-                          setConfirmation(null);
-                        }}
-                        className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
-                      >
-                        <option value="">Select a date...</option>
-                        {generateAvailableDates().map((date) => (
-                          <option key={date.dateString} value={date.dateString}>
-                            {date.displayLabel}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="text-sm font-medium text-gray-200 space-y-1">
-                      Preferred start time
-                      {isLoadingTimes && <span className="text-xs text-gray-400 ml-2">(Loading...)</span>}
-                      <select
-                        value={serviceTime}
-                        onChange={(event) => {
-                          setServiceTime(event.target.value);
-                          setSubmissionError(null);
-                          setSuggestedTimes([]);
-                          setConfirmation(null);
-                        }}
-                        className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white disabled:bg-white/5 disabled:text-gray-500"
-                        disabled={isLoadingTimes}
-                      >
-                        <option value="">Select a time...</option>
-                        {dynamicTimeSlots.map((slot) => (
-                          <option
-                            key={slot.timeString}
-                            value={slot.timeString}
-                            disabled={!slot.isAvailable}
-                          >
-                            {slot.displayLabel}
-                            {!slot.isAvailable && ` (${slot.reason})`}
-                          </option>
-                        ))}
-                      </select>
-                      {dynamicTimeSlots.length > 0 && (
-                        <p className="text-xs text-gray-400 mt-1">
-                          {getAvailableSlots(dynamicTimeSlots).length} of {dynamicTimeSlots.length} slots available
-                        </p>
-                      )}
-                    </label>
+              <div className="space-y-6">
+                <div className="flex items-baseline justify-between flex-wrap gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">Step 2</p>
+                    <h3 className="text-2xl font-bold text-white">Pick the focus area</h3>
                   </div>
-                  <label className="text-sm font-medium text-gray-200 space-y-1">
-                    Time zone
-                    <select
-                      value={timeZone}
-                      onChange={(event) => {
-                        setTimeZone(event.target.value);
-                        setSubmissionError(null);
-                        setConfirmation(null);
-                      }}
-                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
-                    >
-                      {TIME_ZONE_OPTIONS.map((zone) => (
-                        <option key={zone} value={zone}>
-                          {zone.replace('_', ' ')}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="text-sm font-medium text-gray-200 space-y-1">
-                    Notes for our technicians (optional)
-                    <textarea
-                      value={customerNotes}
-                      onChange={(event) => {
-                        setCustomerNotes(event.target.value);
-                        setSubmissionError(null);
-                      }}
-                      rows={3}
-                      placeholder="Gate codes, parking instructions, pets we should greet, or specific problem areas."
-                      className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
-                    />
-                  </label>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleReservation}
-                  className={`w-full inline-flex items-center justify-center rounded-full py-3 text-sm font-semibold transition-colors ${isReadyToReserve && !isSubmitting
-                    ? 'bg-brand-cyan text-white hover:bg-brand-blue'
-                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    }`}
-                  disabled={!isReadyToReserve || isSubmitting}
-                  aria-busy={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Review & Confirm'}
-                </button>
-                <div className="space-y-3">
-                  {submissionError && (
-                    <div className="space-y-2">
-                      <p className="text-xs text-red-600" role="alert">
-                        {submissionError}
-                      </p>
-                      {suggestedTimes.length > 0 && (
-                        <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-3 space-y-2">
-                          <p className="text-xs font-semibold text-yellow-800">Suggested alternative times:</p>
-                          <div className="space-y-1">
-                            {suggestedTimes.map((suggestion, index) => (
-                              <button
-                                key={index}
-                                onClick={() => {
-                                  // Parse the ISO date and convert to local date/time inputs
-                                  const suggestedDate = new Date(suggestion.date);
-
-                                  // Extract date as YYYY-MM-DD
-                                  const year = suggestedDate.getUTCFullYear();
-                                  const month = String(suggestedDate.getUTCMonth() + 1).padStart(2, '0');
-                                  const day = String(suggestedDate.getUTCDate()).padStart(2, '0');
-                                  const dateString = `${year}-${month}-${day}`;
-
-                                  // Extract time as HH:MM
-                                  const hours = String(suggestedDate.getUTCHours()).padStart(2, '0');
-                                  const minutes = String(suggestedDate.getUTCMinutes()).padStart(2, '0');
-                                  const timeString = `${hours}:${minutes}`;
-
-                                  setServiceDate(dateString);
-                                  setServiceTime(timeString);
-                                  setSubmissionError(null);
-                                  setSuggestedTimes([]);
-                                }}
-                                className="block w-full text-left text-xs px-2 py-1.5 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-900 font-medium transition-colors"
-                              >
-                                {suggestion.dayName}: {suggestion.timeRange}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {confirmation && (
-                    <div className="rounded-xl border border-brand-cyan/40 bg-brand-cyan/10 px-4 py-3 text-xs text-brand-dark space-y-1">
-                      <p className="font-semibold text-sm text-brand-dark">
-                        Reservation received for {formatAppointmentWindow(confirmation.startTime, confirmation.timeZone)}.
-                      </p>
-                      <p>
-                        Estimated total {confirmation.totalPriceCents > 0 ? formatCurrency(confirmation.totalPriceCents) : 'Estimate pending'} •
-                        {confirmation.durationMinutes ? ` ${formatDuration(confirmation.durationMinutes)} on site` : ' Time TBD'}.
-                      </p>
-                      <p>
-                        {confirmation.emailSent
-                          ? 'A confirmation email is on its way.'
-                          : 'We were unable to email a confirmation automatically. We will follow up shortly.'}
-                      </p>
-                      {confirmation.calendarUrl && (
-                        <a
-                          href={confirmation.calendarUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex text-brand-cyan font-semibold hover:text-brand-blue"
-                        >
-                          View calendar event
-                        </a>
-                      )}
-                    </div>
-                  )}
-                  <p className="text-xs text-gray-400">
-                    We will verify availability, email a confirmation with your appointment details, and capture payment after service completion.
+                  <p className="text-sm text-gray-300 max-w-md">
+                    Toggle between carpet, tile, upholstery, or window offerings tailored to your selected category.
                   </p>
                 </div>
-              </form>
-            </aside>
-          </div>
-          </>
+                <div className="flex flex-wrap gap-3">
+                  {availableServiceTypes.map((focus) => {
+                    const detail = SERVICE_TYPE_DETAILS[focus];
+                    const isActive = selectedFocus === focus;
+                    return (
+                      <button
+                        key={focus}
+                        type="button"
+                        onClick={() => setSelectedFocus(focus)}
+                        className={`px-4 py-2 rounded-full border text-sm font-semibold transition-colors ${isActive
+                          ? 'bg-brand-cyan text-white border-brand-cyan shadow-md'
+                          : 'border-white/10 text-gray-300 hover:border-brand-cyan hover:text-brand-cyan hover:bg-white/5'
+                          }`}
+                        aria-pressed={isActive}
+                      >
+                        {detail.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-sm text-gray-400">{SERVICE_TYPE_DETAILS[selectedFocus]?.description}</p>
+              </div>
+
+              <div className="grid gap-8 xl:grid-cols-[1.6fr_1fr]">
+                <div className="space-y-6">
+                  <h4 className="text-lg font-semibold text-white">Service options</h4>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {servicesForSelection.map((service) => {
+                      const quantity = quantities[service.id] ?? 1;
+                      const cartLine = cartItems.find((line) => line.service.id === service.id);
+                      const subtotalCents = (service.priceCents ?? 0) * (cartLine?.quantity ?? 0);
+                      const isAreaRugOnSite = service.id === 'area-rug-onsite';
+                      const isAreaRugOffSite = service.id === 'area-rug-offsite';
+                      const isAreaRug = isAreaRugOnSite || isAreaRugOffSite;
+                      const isDeodorizer = service.id === 'deodorizer-powder';
+
+                      // Get appropriate dimensions and pricing
+                      const rugLength = isAreaRugOffSite ? rugOffsiteLength : rugOnsiteLength;
+                      const rugWidth = isAreaRugOffSite ? rugOffsiteWidth : rugOnsiteWidth;
+                      const rugPricing = isAreaRugOffSite ? rugOffsitePricing : rugOnsitePricing;
+                      const maxDimension = isAreaRugOffSite ? 12 : 25;
+
+                      return (
+                        <div
+                          key={service.id}
+                          className="rounded-2xl border border-white/10 bg-white/5 shadow-lg hover:bg-white/10 transition-all flex flex-col backdrop-blur-sm"
+                        >
+                          <img
+                            src={service.imageUrl}
+                            alt={service.title}
+                            onError={(event) => {
+                              if (event.currentTarget.dataset.fallback === 'true') {
+                                return;
+                              }
+                              event.currentTarget.dataset.fallback = 'true';
+                              event.currentTarget.src = '/steam-power-hero2.jpg';
+                            }}
+                            className="w-full h-44 object-cover rounded-t-2xl"
+                          />
+                          <div className="p-5 flex flex-col gap-4 flex-grow">
+                            <div className="space-y-1">
+                              <p className="text-xs font-semibold uppercase tracking-widest text-brand-cyan">
+                                {SERVICE_TYPE_DETAILS[service.serviceType].label}
+                              </p>
+                              <h5 className="text-lg font-bold text-white">{service.title}</h5>
+                              {service.sizeLabel && !isAreaRug && (
+                                <p className="text-sm text-brand-cyan font-semibold">{service.sizeLabel}</p>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-300 leading-relaxed flex-grow">{service.description}</p>
+
+                            {/* Custom Area Rug Sizing */}
+                            {isAreaRug && (
+                              <div className="space-y-4 border-t border-gray-100 pt-4">
+                                <div className="space-y-3">
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <label className="text-sm font-medium text-white">
+                                        Length: {rugLength} ft
+                                      </label>
+                                      <span className="text-xs text-gray-500">Max {maxDimension} ft</span>
+                                    </div>
+                                    <input
+                                      type="range"
+                                      min={1}
+                                      max={maxDimension}
+                                      value={rugLength}
+                                      onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        if (isAreaRugOffSite) {
+                                          setRugOffsiteLength(val);
+                                        } else {
+                                          setRugOnsiteLength(val);
+                                        }
+                                      }}
+                                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <label className="text-sm font-medium text-white">
+                                        Width: {rugWidth} ft
+                                      </label>
+                                      <span className="text-xs text-gray-500">Max {maxDimension} ft</span>
+                                    </div>
+                                    <input
+                                      type="range"
+                                      min={1}
+                                      max={maxDimension}
+                                      value={rugWidth}
+                                      onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        if (isAreaRugOffSite) {
+                                          setRugOffsiteWidth(val);
+                                        } else {
+                                          setRugOnsiteWidth(val);
+                                        }
+                                      }}
+                                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-cyan"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="bg-brand-cyan/10 rounded-lg p-3 space-y-1">
+                                  <p className="text-xs text-gray-300">
+                                    Area: <span className="font-semibold text-white">{rugPricing.squareFeet} sq ft</span>
+                                  </p>
+                                  <p className="text-xs text-gray-300">
+                                    Rate: <span className="font-semibold text-white">${rugPricing.pricePerSqFt} per sq ft</span>
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Deodorizer Scent Selection */}
+                            {isDeodorizer && (
+                              <div className="space-y-3 border-t border-gray-100 pt-4">
+                                <label className="text-sm font-medium text-white">
+                                  Select Scent
+                                </label>
+                                <select
+                                  value={selectedScent}
+                                  onChange={(e) => setSelectedScent(e.target.value)}
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white"
+                                >
+                                  {DEODORIZER_SCENTS.map((scent) => (
+                                    <option key={scent} value={scent}>
+                                      {scent}
+                                    </option>
+                                  ))}
+                                </select>
+                                <div className="bg-brand-cyan/10 rounded-lg p-3">
+                                  <p className="text-xs text-gray-600">
+                                    Selected: <span className="font-semibold text-white">{selectedScent}</span>
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xl font-semibold text-brand-cyan">
+                                  {isAreaRug ? rugPricing.priceFormatted : service.price}
+                                </span>
+                                <span className="text-sm text-gray-500">{formatDuration(service.durationMinutes)}</span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
+                                  Qty
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={10}
+                                    value={quantity}
+                                    onChange={(event) => handleQuantityChange(service.id, event.target.value)}
+                                    className="w-16 border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (isAreaRug) {
+                                      handleAddRugToCart(service, isAreaRugOffSite);
+                                    } else if (isDeodorizer) {
+                                      handleAddDeodzizerToCart(service);
+                                    } else {
+                                      handleAddToCart(service);
+                                    }
+                                  }}
+                                  className="ml-auto inline-flex items-center justify-center px-4 py-2 rounded-full bg-brand-cyan text-white text-sm font-semibold hover:bg-brand-blue transition-colors"
+                                >
+                                  Add to Cart
+                                </button>
+                              </div>
+                              {cartLine && (
+                                <p className="text-xs text-gray-500">
+                                  In cart • {cartLine.quantity} × {cartLine.service.price} ={' '}
+                                  {cartLine.service.priceCents
+                                    ? formatCurrency(subtotalCents)
+                                    : 'Estimate pending'}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {servicesForSelection.length === 0 && (
+                      <div className="col-span-full text-center text-gray-500 border border-dashed border-gray-300 rounded-2xl p-8">
+                        <p className="font-semibold text-brand-dark">More services coming soon</p>
+                        <p className="text-sm mt-2">We are expanding offerings for this focus area. Pick another category or contact us for a custom quote.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <aside className="space-y-6">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 shadow-lg p-5 space-y-4 backdrop-blur-sm">
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <h4 className="text-lg font-semibold text-white">Cart summary</h4>
+                        <p className="text-xs uppercase tracking-widest text-brand-cyan">Step 3</p>
+                      </div>
+                      <span className="text-sm text-gray-400">
+                        {cartItems.length} item{cartItems.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                    <div className="space-y-4">
+                      {cartItems.length === 0 && <p className="text-sm text-gray-400">Add at least one service to start your booking.</p>}
+                      {cartItems.map((line) => {
+                        const hasUnitPrice = typeof line.service.priceCents === 'number' && line.service.priceCents > 0;
+                        const lineSubtotal = (line.service.priceCents ?? 0) * line.quantity;
+                        const lineTotalLabel = hasUnitPrice ? formatCurrency(lineSubtotal) : 'Estimate pending';
+                        return (
+                          <div key={line.service.id} className="rounded-xl border border-white/10 p-4 space-y-3 bg-white/5">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="text-sm font-semibold text-white">{line.service.title}</p>
+                                {line.service.sizeLabel && (
+                                  <p className="text-xs text-brand-cyan">{line.service.sizeLabel}</p>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeFromCart(line.service.id)}
+                                className="text-xs font-semibold text-brand-cyan hover:text-brand-blue"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <div className="flex items-center justify-between text-sm text-gray-300">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => incrementCartItem(line.service, -1)}
+                                  className="w-7 h-7 inline-flex items-center justify-center rounded-full border border-white/20 hover:border-brand-cyan text-white"
+                                  aria-label={`Reduce quantity for ${line.service.title}`}
+                                >
+                                  −
+                                </button>
+                                <span className="font-semibold text-white">{line.quantity}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => incrementCartItem(line.service, 1)}
+                                  className="w-7 h-7 inline-flex items-center justify-center rounded-full border border-white/20 hover:border-brand-cyan text-white"
+                                  aria-label={`Increase quantity for ${line.service.title}`}
+                                >
+                                  +
+                                </button>
+                              </div>
+                              <span className="font-semibold text-brand-cyan">{lineTotalLabel}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="border-t border-white/10 pt-4 space-y-2 text-sm">
+                      <div className="flex justify-between text-white font-semibold">
+                        <span>Estimated total</span>
+                        <span>{totalPriceCents > 0 ? formatCurrency(totalPriceCents) : 'Estimate pending'}</span>
+                      </div>
+                      <div className="flex justify-between text-gray-400">
+                        <span>Service time</span>
+                        <span>{totalDurationMinutes ? formatDuration(totalDurationMinutes) : 'TBD'}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Final charges occur after the service is completed and verified on-site.</p>
+                    </div>
+                  </div>
+
+                  <form className="rounded-2xl border border-white/10 bg-white/5 shadow-lg p-5 space-y-4 backdrop-blur-sm">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="text-lg font-semibold text-white">Reserve your time</h4>
+                      <p className="text-xs uppercase tracking-widest text-brand-cyan">Step 4</p>
+                    </div>
+                    <div className="grid gap-4">
+                      <label className="text-sm font-medium text-gray-200 space-y-1">
+                        Name
+                        <input
+                          type="text"
+                          value={customerName}
+                          onChange={(event) => {
+                            setCustomerName(event.target.value);
+                            setSubmissionError(null);
+                            setConfirmation(null);
+                          }}
+                          placeholder="How should we address you?"
+                          className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-200 space-y-1">
+                        Email
+                        <input
+                          type="email"
+                          value={customerEmail}
+                          onChange={(event) => {
+                            setCustomerEmail(event.target.value);
+                            setSubmissionError(null);
+                            setConfirmation(null);
+                          }}
+                          placeholder="we'll send confirmation here"
+                          className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-200 space-y-1">
+                        Phone (optional)
+                        <input
+                          type="tel"
+                          value={customerPhone}
+                          onChange={(event) => {
+                            setCustomerPhone(event.target.value);
+                            setSubmissionError(null);
+                            setConfirmation(null);
+                          }}
+                          placeholder="Helpful for day-of updates"
+                          className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-200 space-y-1">
+                        Service Address
+                        <input
+                          type="text"
+                          value={customerAddress}
+                          onChange={(event) => {
+                            setCustomerAddress(event.target.value);
+                            setSubmissionError(null);
+                            setConfirmation(null);
+                          }}
+                          placeholder="Street address for service"
+                          className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
+                        />
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label className="text-sm font-medium text-gray-200 space-y-1">
+                          Preferred date
+                          <select
+                            value={serviceDate}
+                            onChange={(event) => {
+                              setServiceDate(event.target.value);
+                              setSubmissionError(null);
+                              setSuggestedTimes([]);
+                              setConfirmation(null);
+                            }}
+                            className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
+                          >
+                            <option value="">Select a date...</option>
+                            {generateAvailableDates().map((date) => (
+                              <option key={date.dateString} value={date.dateString}>
+                                {date.displayLabel}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="text-sm font-medium text-gray-200 space-y-1">
+                          Preferred start time
+                          {isLoadingTimes && <span className="text-xs text-gray-400 ml-2">(Loading...)</span>}
+                          <select
+                            value={serviceTime}
+                            onChange={(event) => {
+                              setServiceTime(event.target.value);
+                              setSubmissionError(null);
+                              setSuggestedTimes([]);
+                              setConfirmation(null);
+                            }}
+                            className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white disabled:bg-white/5 disabled:text-gray-500"
+                            disabled={isLoadingTimes}
+                          >
+                            <option value="">Select a time...</option>
+                            {dynamicTimeSlots.map((slot) => (
+                              <option
+                                key={slot.timeString}
+                                value={slot.timeString}
+                                disabled={!slot.isAvailable}
+                              >
+                                {slot.displayLabel}
+                                {!slot.isAvailable && ` (${slot.reason})`}
+                              </option>
+                            ))}
+                          </select>
+                          {dynamicTimeSlots.length > 0 && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              {getAvailableSlots(dynamicTimeSlots).length} of {dynamicTimeSlots.length} slots available
+                            </p>
+                          )}
+                        </label>
+                      </div>
+                      <label className="text-sm font-medium text-gray-200 space-y-1">
+                        Time zone
+                        <select
+                          value={timeZone}
+                          onChange={(event) => {
+                            setTimeZone(event.target.value);
+                            setSubmissionError(null);
+                            setConfirmation(null);
+                          }}
+                          className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white"
+                        >
+                          {TIME_ZONE_OPTIONS.map((zone) => (
+                            <option key={zone} value={zone}>
+                              {zone.replace('_', ' ')}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="text-sm font-medium text-gray-200 space-y-1">
+                        Notes for our technicians (optional)
+                        <textarea
+                          value={customerNotes}
+                          onChange={(event) => {
+                            setCustomerNotes(event.target.value);
+                            setSubmissionError(null);
+                          }}
+                          rows={3}
+                          placeholder="Gate codes, parking instructions, pets we should greet, or specific problem areas."
+                          className="w-full border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-cyan bg-white/10 text-white placeholder-gray-400"
+                        />
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleReservation}
+                      className={`w-full inline-flex items-center justify-center rounded-full py-3 text-sm font-semibold transition-colors ${isReadyToReserve && !isSubmitting
+                        ? 'bg-brand-cyan text-white hover:bg-brand-blue'
+                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        }`}
+                      disabled={!isReadyToReserve || isSubmitting}
+                      aria-busy={isSubmitting}
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Review & Confirm'}
+                    </button>
+                    <div className="space-y-3">
+                      {submissionError && (
+                        <div className="space-y-2">
+                          <p className="text-xs text-red-600" role="alert">
+                            {submissionError}
+                          </p>
+                          {suggestedTimes.length > 0 && (
+                            <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-3 space-y-2">
+                              <p className="text-xs font-semibold text-yellow-800">Suggested alternative times:</p>
+                              <div className="space-y-1">
+                                {suggestedTimes.map((suggestion, index) => (
+                                  <button
+                                    key={index}
+                                    onClick={() => {
+                                      // Parse the ISO date and convert to local date/time inputs
+                                      const suggestedDate = new Date(suggestion.date);
+
+                                      // Extract date as YYYY-MM-DD
+                                      const year = suggestedDate.getUTCFullYear();
+                                      const month = String(suggestedDate.getUTCMonth() + 1).padStart(2, '0');
+                                      const day = String(suggestedDate.getUTCDate()).padStart(2, '0');
+                                      const dateString = `${year}-${month}-${day}`;
+
+                                      // Extract time as HH:MM
+                                      const hours = String(suggestedDate.getUTCHours()).padStart(2, '0');
+                                      const minutes = String(suggestedDate.getUTCMinutes()).padStart(2, '0');
+                                      const timeString = `${hours}:${minutes}`;
+
+                                      setServiceDate(dateString);
+                                      setServiceTime(timeString);
+                                      setSubmissionError(null);
+                                      setSuggestedTimes([]);
+                                    }}
+                                    className="block w-full text-left text-xs px-2 py-1.5 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-900 font-medium transition-colors"
+                                  >
+                                    {suggestion.dayName}: {suggestion.timeRange}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {confirmation && (
+                        <div className="rounded-xl border border-brand-cyan/40 bg-brand-cyan/10 px-4 py-3 text-xs text-brand-dark space-y-1">
+                          <p className="font-semibold text-sm text-brand-dark">
+                            Reservation received for {formatAppointmentWindow(confirmation.startTime, confirmation.timeZone)}.
+                          </p>
+                          <p>
+                            Estimated total {confirmation.totalPriceCents > 0 ? formatCurrency(confirmation.totalPriceCents) : 'Estimate pending'} •
+                            {confirmation.durationMinutes ? ` ${formatDuration(confirmation.durationMinutes)} on site` : ' Time TBD'}.
+                          </p>
+                          <p>
+                            {confirmation.emailSent
+                              ? 'A confirmation email is on its way.'
+                              : 'We were unable to email a confirmation automatically. We will follow up shortly.'}
+                          </p>
+                          {confirmation.calendarUrl && (
+                            <a
+                              href={confirmation.calendarUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex text-brand-cyan font-semibold hover:text-brand-blue"
+                            >
+                              View calendar event
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-400">
+                        We will verify availability, email a confirmation with your appointment details, and capture payment after service completion.
+                      </p>
+                    </div>
+                  </form>
+                </aside>
+              </div>
+            </>
           )}
         </div>
       </div>

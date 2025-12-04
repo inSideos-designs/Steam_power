@@ -10,21 +10,16 @@ import Footer from './components/Footer';
 
 const App: React.FC = () => {
   return (
-    <div className="font-sans text-gray-800 bg-premium-dark min-h-screen relative overflow-x-hidden">
-      {/* Global Steam Background */}
-      {/* Global Steam Background - Removed as per user request */}
-
-      <div className="relative z-10">
-        <Header />
-        <main>
-          <Hero />
-          <Services />
-          <WhyChooseUs />
-          <About />
-          <Testimonials />
-        </main>
-        <Footer />
-      </div>
+    <div className="font-sans text-gray-800">
+      <Header />
+      <main>
+        <Hero />
+        <Services />
+        <WhyChooseUs />
+        <About />
+        <Testimonials />
+      </main>
+      <Footer />
     </div>
   );
 };

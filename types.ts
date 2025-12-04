@@ -9,7 +9,6 @@ export type ServiceFocus =
   | 'windows'
   | 'area_rug'
   | 'powerwash'
-  | 'roofing'
   | 'detailing'
   | 'products';
 
@@ -36,7 +35,6 @@ export interface Testimonial {
 }
 
 export interface Feature {
-  // Fix for line 18: Replaced `JSX.Element` with `ReactElement` to resolve "Cannot find namespace 'JSX'" error.
   icon: ReactElement;
   title: string;
   description: string;

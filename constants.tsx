@@ -8,7 +8,7 @@ export const TESTIMONIALS: Testimonial[] = [
   {
     name: 'Sarah J.',
     location: 'East Brunswick, NJ',
-    quote: 'Steam Power Cleaning did an incredible job on my carpets! They look brand new. The technician was professional and courteous. Highly recommend!',
+    quote: 'Steam Powered Cleaning did an incredible job on my carpets! They look brand new. The technician was professional and courteous. Highly recommend!',
     avatarUrl: 'https://picsum.photos/seed/person1/100/100',
   },
   {
@@ -52,8 +52,8 @@ export const FEATURES: Feature[] = [
   },
   {
     icon: <CertifiedIcon />,
-    title: 'Trained Technicians',
-    description: 'Our team is professionally trained, ensuring you receive the highest quality service every time.',
+    title: 'Certified Technicians',
+    description: 'Our team is professionally trained and certified, ensuring you receive the highest quality service every time.',
   },
   {
     icon: <SatisfactionIcon />,
